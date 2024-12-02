@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html class="h-full" lang="en">
 
 <head>
   <meta charset="UTF-8">
@@ -11,8 +11,16 @@
   <link rel="stylesheet" href="/static/css/main.css">
 </head>
 
-<body>
-  <p>Hackathon</p>
+<body class="min-h-full flex flex-col flex-1">
+  <div class="flex flex-1 flex-col justify-between gap-4">
+    {{ template "header" }}
+
+    <main class="mx-auto w-full max-w-7xl flex-1 px-8" id="main-content">
+      <p>Hackathon</p>
+    </main>
+
+    {{ template "footer" }}
+  </div>
 </body>
 
 </html>
