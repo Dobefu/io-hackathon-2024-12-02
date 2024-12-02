@@ -1,0 +1,15 @@
+uuid: 26de2036-7c47-4450-bd50-dfb949ac34c4
+langcode: en
+status: true
+dependencies:
+  module:
+    - graphql
+    - key_auth
+id: api
+label: API
+weight: -8
+is_admin: null
+permissions:
+  - 'execute default arbitrary graphql requests'
+  - 'execute default persisted graphql requests'
+  - 'use key authentication'

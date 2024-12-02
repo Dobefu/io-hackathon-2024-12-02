@@ -23,6 +23,7 @@
         "drupal/gin": "^3.0@RC",
         "drupal/gin_login": "^2.1",
         "drupal/graphql": "^4.9",
+        "drupal/key_auth": "^2.2",
         "drush/drush": "^13.3"
     },
     "conflict": {
