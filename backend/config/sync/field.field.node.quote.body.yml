@@ -1,0 +1,26 @@
+uuid: c9457a08-27a0-46a1-ae6c-4e702054d6ee
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.node.body
+    - filter.format.plain_text
+    - node.type.quote
+  module:
+    - text
+id: node.quote.body
+field_name: body
+entity_type: node
+bundle: quote
+label: Body
+description: ''
+required: false
+translatable: true
+default_value: {  }
+default_value_callback: ''
+settings:
+  display_summary: false
+  required_summary: false
+  allowed_formats:
+    - plain_text
+field_type: text_with_summary
