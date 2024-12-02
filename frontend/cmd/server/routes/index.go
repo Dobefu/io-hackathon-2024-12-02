@@ -15,6 +15,7 @@ func Index(w http.ResponseWriter, r *http.Request) {
 		"cmd/templates/html.tpl.html",
 		"cmd/templates/layout/header.tpl.html",
 		"cmd/templates/layout/footer.tpl.html",
+		"cmd/templates/pages/index.tpl.html",
 	))
 	err := tpl.Execute(w, nil)
 
