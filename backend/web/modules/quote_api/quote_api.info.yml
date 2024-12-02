@@ -1,0 +1,8 @@
+name: 'Quote API'
+type: module
+description: 'Provides API endpoint for the Quotes'
+package: hackathon
+core_version_requirement: ^10 || ^11
+dependencies:
+  - drupal:node
+  - drupal:taxonomy
