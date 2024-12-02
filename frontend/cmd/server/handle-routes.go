@@ -6,5 +6,6 @@ import (
 )
 
 func HandleRoutes(mux *http.ServeMux) {
+	mux.HandleFunc("GET /static/{path...}", routes.StaticFiles)
 	mux.HandleFunc("GET /", routes.Index)
 }
