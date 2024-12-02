@@ -2,7 +2,10 @@ uuid: 101e179a-5ef6-4cbf-bfba-0c0d48fdf5e4
 langcode: en
 status: true
 dependencies:
+  config:
+    - filter.format.limited_html
   module:
+    - filter
     - system
 _core:
   default_config_hash: j5zLMOdJBqC0bMvSdth5UebkprJB8g_2FXHqhfpJzow
@@ -12,3 +15,4 @@ weight: -10
 is_admin: false
 permissions:
   - 'access content'
+  - 'use text format limited_html'

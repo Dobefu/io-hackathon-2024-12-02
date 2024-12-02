@@ -1,9 +1,33 @@
 uuid: 3a7d3fcb-01f1-480b-a3ed-b5879ea4babc
 langcode: en
 status: true
-dependencies: {  }
+dependencies:
+  config:
+    - filter.format.limited_html
+    - node.type.basic_page
+  module:
+    - filter
+    - node
+    - toolbar
 id: editor
 label: Editor
 weight: -8
 is_admin: null
-permissions: {  }
+permissions:
+  - 'access content overview'
+  - 'access toolbar'
+  - 'access user profiles'
+  - 'administer nodes'
+  - 'create basic_page content'
+  - 'delete all revisions'
+  - 'delete any basic_page content'
+  - 'delete basic_page revisions'
+  - 'delete own basic_page content'
+  - 'edit any basic_page content'
+  - 'edit own basic_page content'
+  - 'revert all revisions'
+  - 'revert basic_page revisions'
+  - 'use text format limited_html'
+  - 'view all revisions'
+  - 'view basic_page revisions'
+  - 'view own unpublished content'
