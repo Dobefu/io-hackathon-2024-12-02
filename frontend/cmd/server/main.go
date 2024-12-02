@@ -1,12 +1,13 @@
 package server
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 )
 
-func Start() error {
-	url := ":3000"
+func Start(port uint) error {
+	url := fmt.Sprintf(":%d", port)
 
 	mux := http.NewServeMux()
 

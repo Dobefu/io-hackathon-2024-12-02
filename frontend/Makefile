@@ -7,7 +7,7 @@ build:
 	@npx tailwindcss -m -i ./cmd/templates/css/main.css -o ./static/css/main.css
 
 run: build
-	@./frontend
+	# @./frontend
 
 dev: build
-	@npx tailwindcss -i ./cmd/templates/css/main.css -o ./static/css/main.css --watch
+	@air

@@ -27,3 +27,6 @@ node_modules/
 # Built CSS files.
 static/css/main.css
 !static/css/.gitkeep
+
+# Air tmp files.
+tmp/
