@@ -11,9 +11,16 @@ editor: ckeditor5
 settings:
   toolbar:
     items:
+      - undo
+      - redo
+      - '|'
       - heading
       - bold
       - italic
+      - underline
+      - strikethrough
+      - superscript
+      - subscript
   plugins:
     ckeditor5_heading:
       enabled_headings:
