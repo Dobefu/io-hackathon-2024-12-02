@@ -24,9 +24,12 @@ fi
 cd backend/web || exit 1
 DRUSH="../vendor/bin/drush"
 
+# Display a warning before installing the site
 printf "\n"
 printf "\033[91m⚠ WARNING: This installation is meant to be reproducible, meaning that any generated keys will NOT be random. DO NOT USE THIS IN PRODUCTION!\033[0m\n"
 printf "\n"
+
+sleep 1
 
 # If the user has passed the -y flag, assume they want to (re)install the site
 if [ -n "$ASSUME_YES" ]; then
@@ -57,10 +60,16 @@ head -c 64 /dev/urandom | base64 -w 0 > ../keys/jwt.key.txt
 # Import the site config
 "$DRUSH" config:import -y --quiet
 
+# Set the password for the root user
+"$DRUSH" user:password root root
+
 # Create a new API user, and generate an API key
 "$DRUSH" user:create -y --quiet "GraphQL API"
 "$DRUSH" user:role:add -y --quiet api "GraphQL API"
 "$DRUSH" sql:query "UPDATE users_field_data SET api_key = \"dqazok5GVgQKBgQD4ZND1HYklxLjKh1dm\" WHERE name='GraphQL API';"
+
+# Rebuild the cache, just in case
+"$DRUSH" cache:rebuild --quiet
 
 # Generate a login link
 "$DRUSH" user:login
