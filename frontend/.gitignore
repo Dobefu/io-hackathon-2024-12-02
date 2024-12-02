@@ -20,3 +20,10 @@ frontend
 
 # Goreleaser generated files.
 dist/
+
+# The heaviest thing in the universe.
+node_modules/
+
+# Built CSS files.
+static/css/main.css
+!static/css/.gitkeep
