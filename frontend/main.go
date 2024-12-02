@@ -1,7 +1,14 @@
 package main
 
-import "fmt"
+import (
+	"frontend/cmd/server"
+	"log"
+)
 
 func main() {
-	fmt.Println("Main")
+	err := server.Start()
+
+	if err != nil {
+		log.Panicf("Unable to start the server: %s\n", err.Error())
+	}
 }
