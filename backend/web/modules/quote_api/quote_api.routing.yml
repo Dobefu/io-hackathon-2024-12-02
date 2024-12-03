@@ -1,0 +1,7 @@
+quote_api.get:
+  path: "/api/quote"
+  defaults:
+    _controller: '\Drupal\quote_api\Controller\QuoteApiController::getQuotes'
+    _format: "json"
+  requirements:
+    _access: "TRUE"
