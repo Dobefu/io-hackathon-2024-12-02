@@ -2,6 +2,7 @@
 
 namespace Drupal\quote_api\Controller;
 
+use Drupal\Core\Entity\Query\QueryInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Drupal\node\Entity\Node;
@@ -98,6 +99,31 @@ class QuoteApiController
     return null;
   }
 
+  /**
+   * Returns the latest or random existing Quote.
+   *
+   * @param \Symfony\Component\HttpFoundation\Request $request
+   * @return \Symfony\Component\HttpFoundation\JsonResponse
+   *  Expected JSON Response containing a single quote.
+   */
+  public function getQuote(Request $request)
+  {
+    $unauthorized = $this->checkAccess($request);
+    if ($unauthorized) {
+      return $unauthorized;
+    }
+
+    // Create the base query to get published 'quote' nodes.
+    $query = \Drupal::entityQuery('node')
+      ->condition('type', 'quote')
+      ->condition('status', 1)
+      ->accessCheck(FALSE)
+      ->sort('created', 'DESC')
+      ->range(0, 1);
+
+    return $this->sendResponse($query);
+  }
+
 
   /**
    * Returns the available entries from the `quote` content type.
@@ -135,7 +161,6 @@ class QuoteApiController
       } else {
         $decodedTarget = html_entity_decode($target, ENT_QUOTES, 'UTF-8');
 
-
         // Get the expected Taxonomy id from the given name
         $term_ids = $term_ids = $this->filterByTarget($target);
 
@@ -158,6 +183,12 @@ class QuoteApiController
         $query->sort('created', $sortOrder);
         break;
     }
+
+    return $this->sendResponse($query);
+  }
+
+  private function sendResponse(QueryInterface $query)
+  {
 
     $nodes = $query->execute();
     $quotes = Node::loadMultiple($nodes);
