@@ -1,15 +1,17 @@
-uuid: 4f1d5b46-76c9-41fc-a991-defc1af54f2e
+uuid: 9d1439c2-b238-4626-9328-07648eb431eb
 langcode: en
 status: true
 dependencies:
   config:
-    - field.field.node.basic_page.body
-    - node.type.basic_page
+    - field.field.node.quote.body
+    - field.field.node.quote.field_person
+    - node.type.quote
   module:
+    - path
     - text
-id: node.basic_page.default
+id: node.quote.default
 targetEntityType: node
-bundle: basic_page
+bundle: quote
 mode: default
 content:
   body:
@@ -27,6 +29,16 @@ content:
     weight: 10
     region: content
     settings: {  }
+    third_party_settings: {  }
+  field_person:
+    type: entity_reference_autocomplete
+    weight: 122
+    region: content
+    settings:
+      match_operator: CONTAINS
+      match_limit: 10
+      size: 60
+      placeholder: ''
     third_party_settings: {  }
   path:
     type: path

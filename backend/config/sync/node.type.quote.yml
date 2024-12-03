@@ -1,0 +1,17 @@
+uuid: 893ee0b6-28af-44c2-84df-390d9bc91058
+langcode: en
+status: true
+dependencies:
+  module:
+    - menu_ui
+third_party_settings:
+  menu_ui:
+    available_menus: {  }
+    parent: ''
+name: Quote
+type: quote
+description: null
+help: null
+new_revision: false
+preview_mode: 0
+display_submitted: false
