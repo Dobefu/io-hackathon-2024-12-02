@@ -83,17 +83,17 @@ class QuoteApiController
    */
   public function getQuotes(Request $request)
   {
-
-    $token = $request->headers->get('Authorization') ?: $request->query->get('token');
     $secret = \Drupal::config('quote_api.settings')->get('api_secret');
-
-
     if (!$secret) {
-      return new JsonResponse(['error', 'Endpoint not available'], 500);
+      return new JsonResponse(['error', 'API Endpoint not available'], 500);
     }
 
+    // Implements basic Api token usage via Argon2 that is defined from the
+    // expected API secret.
+    $token = $request->headers->get('Authorization') ?: $request->query->get('token');
+
     if (!$token) {
-      return new JsonResponse(['error', 'Unable to continue from undefined token!'], 400);
+      return new JsonResponse(['error', 'No `token` parameter or `Authorization` header detected from the initial Request!'], 400);
     }
 
     $hash = base64_decode($token);
@@ -104,7 +104,6 @@ class QuoteApiController
     if (!password_verify($secret, $hash)) {
       return new JsonResponse(['error' => 'Token rejected: ' . $token], 403);
     }
-
 
     // Filter from the additional Person Taxonomy name value or ID
     $target = $request->query->get('target');
