@@ -48,7 +48,6 @@ class QuoteApiConfigForm extends ConfigFormBase
       '#description' => $this->t('Argon2 Generated Api Token generated from the current API Secret.'),
     ];
 
-
     return parent::buildForm($form, $form_state);
   }
 
@@ -66,9 +65,9 @@ class QuoteApiConfigForm extends ConfigFormBase
 
     if ($api_secret) {
       $argon2_hash = password_hash($api_secret, 'argon2id', [
-        'memory_cost' => 512,
+        'memory_cost' => 256,
         'time_cost' => 1,
-        'threads' => 2
+        'threads' => 1
       ]);
 
       $this
@@ -76,7 +75,6 @@ class QuoteApiConfigForm extends ConfigFormBase
         ->set('api_token', base64_encode($argon2_hash))
         ->save();
     }
-
 
     parent::submitForm($form, $form_state);
   }
