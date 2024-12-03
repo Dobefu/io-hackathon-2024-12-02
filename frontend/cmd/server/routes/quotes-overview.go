@@ -1,17 +1,16 @@
 package routes
 
 import (
+	"frontend/cmd/server/utils"
 	"html/template"
 	"net/http"
 )
 
 func QuotesOverview(w http.ResponseWriter, r *http.Request) {
-	tpl := template.Must(template.ParseFiles(
-		"cmd/templates/html.tpl.html",
-		"cmd/templates/layout/header.tpl.html",
-		"cmd/templates/layout/footer.tpl.html",
-		"cmd/templates/pages/quotes.tpl.html",
-	))
+	templates := utils.CollectGlobalTemplates()
+	templates = append(templates, "cmd/templates/pages/quotes.tpl.html")
+
+	tpl := template.Must(template.ParseFiles(templates...))
 
 	err := tpl.Execute(w, nil)
 
