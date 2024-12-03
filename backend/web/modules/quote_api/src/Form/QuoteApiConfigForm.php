@@ -44,8 +44,8 @@ class QuoteApiConfigForm extends ConfigFormBase
       '#type' => 'textarea',
       '#title' => $this->t('API Token'),
       '#default_value' => $api_token,
-      '#readonly' => TRUE,  // This makes the field read-only
-      '#description' => $this->t('Argon2 Generated Api Token from the current API Secret'),
+      '#readonly' => TRUE,
+      '#description' => $this->t('Argon2 Generated Api Token generated from the current API Secret.'),
     ];
 
 
@@ -65,7 +65,11 @@ class QuoteApiConfigForm extends ConfigFormBase
       ->save();
 
     if ($api_secret) {
-      $argon2_hash = password_hash($api_secret, 'argon2id');
+      $argon2_hash = password_hash($api_secret, 'argon2id', [
+        'memory_cost' => 512,
+        'time_cost' => 1,
+        'threads' => 2
+      ]);
 
       $this
         ->config('quote_api.settings')
