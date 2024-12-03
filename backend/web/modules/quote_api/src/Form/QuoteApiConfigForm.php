@@ -41,7 +41,7 @@ class QuoteApiConfigForm extends ConfigFormBase
     // Generate the Argon2 hash of the API secret and display it as a read-only field
     $api_token = $config->get('api_token') ?: '';
     $form['api_token'] = [
-      '#type' => 'textfield',
+      '#type' => 'textarea',
       '#title' => $this->t('API Token'),
       '#default_value' => $api_token,
       '#readonly' => TRUE,  // This makes the field read-only
