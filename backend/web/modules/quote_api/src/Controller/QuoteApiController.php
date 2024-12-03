@@ -71,17 +71,7 @@ class QuoteApiController
     return $query;
   }
 
-
-  /**
-   * Returns the available entries from the `quote` content type.
-   *
-   * @param \Symfony\Component\HttpFoundation\Request $request
-   *  The initial HTTP Request.
-   *
-   * @return \Symfony\Component\HttpFoundation\JsonResponse
-   *  Expected JSON Response containing quote data.
-   */
-  public function getQuotes(Request $request)
+  private function checkAccess(Request $request)
   {
     $secret = \Drupal::config('quote_api.settings')->get('api_secret');
     if (!$secret) {
@@ -103,6 +93,27 @@ class QuoteApiController
 
     if (!password_verify($secret, $hash)) {
       return new JsonResponse(['error' => 'Token rejected: ' . $token], 403);
+    }
+
+    return null;
+  }
+
+
+  /**
+   * Returns the available entries from the `quote` content type.
+   *
+   * @param \Symfony\Component\HttpFoundation\Request $request
+   *  The initial HTTP Request.
+   *
+   * @return \Symfony\Component\HttpFoundation\JsonResponse
+   *  Expected JSON Response containing quote data.
+   */
+  public function getQuotes(Request $request)
+  {
+    $unauthorized = $this->checkAccess($request);
+
+    if ($unauthorized) {
+      return $unauthorized;
     }
 
     // Filter from the additional Person Taxonomy name value or ID
