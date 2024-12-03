@@ -72,12 +72,15 @@ class QuoteApiController
 
     // Filter from the additional Person Taxonomy name value or ID
     $target = $request->query->get('target');
+    $sortBy = $request->query->get('sortBy', 'date');
+    $sortOrder = $request->query->get('sortOrder', 'ASC');
+
 
     // Fetch published quotes of content type 'quote'.
     $query = \Drupal::entityQuery('node')
       ->condition('type', 'quote')
       ->condition('status', 1)
-      ->accessCheck(access_check: FALSE); // Use API key instead, .
+      ->accessCheck(FALSE); // Use API key instead, .
     ;
 
     // Apply additional filtering by `people` Taxonomy name or ID from:
@@ -99,6 +102,18 @@ class QuoteApiController
       }
     }
 
+    // Implements basic sorting by Name or Date in ascending or descending
+    // order:
+    switch ($sortBy) {
+      case 'name':
+        $query->sort('title', $sortOrder);
+        break;
+
+      default:
+        $query->sort('created', $sortOrder);
+        break;
+    }
+
     $nodes = $query->execute();
     $quotes = Node::loadMultiple($nodes);
 
@@ -114,17 +129,10 @@ class QuoteApiController
       ];
     }
 
-    $status = count($response) ? 200 : 404;
+    if (!count($response)) {
+      return new JsonResponse(['error' => 'Quotes not found'], 404);
+    }
 
     return new JsonResponse($response);
   }
-
-  // public function filterByPerson()
-  // {
-  //   return \Drupal::entityQuery('taxonomy_term')
-  //     ->condition('name', $target, 'Like')
-  //     ->condition('vid', 'people')
-  //     ->accessCheck(access_check: False)
-  //     ->execute();
-  // }
 }
