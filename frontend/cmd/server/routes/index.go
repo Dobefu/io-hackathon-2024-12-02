@@ -16,7 +16,6 @@ func Index(w http.ResponseWriter, r *http.Request) {
 	templates = append(templates, "cmd/templates/pages/index.tpl.html")
 
 	tpl := template.Must(template.ParseFiles(templates...))
-
 	err := tpl.Execute(w, nil)
 
 	if err != nil {

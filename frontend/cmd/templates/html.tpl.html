@@ -13,13 +13,13 @@
 
 <body class="min-h-full flex flex-col flex-1 bg-gradient-to-br from-white to-gray-50">
   <div class="flex flex-1 flex-col justify-between gap-4">
-    {{ template "header" }}
+    {{ template "header" . }}
 
     <main class="mx-auto w-full max-w-7xl flex-1 px-8" id="main-content">
-      {{ template "page" }}
+      {{ template "page" . }}
     </main>
 
-    {{ template "footer" }}
+    {{ template "footer" . }}
   </div>
 </body>
 
