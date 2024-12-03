@@ -16,7 +16,7 @@ class QuoteApiController
 {
   /**
    * Helper method to get term IDs from a target as plain text, HTML entity
-   *  or Base64 encoded string.
+   * or Base64 encoded string.
    *
    * @param string $target
    *   The target string (could be a plain text, HTML entity, or Base64).
@@ -84,7 +84,7 @@ class QuoteApiController
    */
   private function checkAccess(Request $request)
   {
-    // Get the current user
+    // Get the current user and check if the required permissions are available.
     $currentUser = \Drupal::currentUser();
 
     if ($currentUser->isAuthenticated()) {
@@ -95,13 +95,15 @@ class QuoteApiController
       return null;
     }
 
+    // Check with the API credentials if no user is logged in or does not have
+    // the required permissions.
     $secret = \Drupal::config('quote_api.settings')->get('api_secret');
     if (!$secret) {
       return new JsonResponse(['error', 'API Endpoint not available'], 500);
     }
 
-    // Implements basic Api token usage via Argon2 that is defined from the
-    // expected API secret.
+    // Implements basic API token usage via Argon2 that is defined from the
+    // expected API secret and timestamp based of the API Range configuration.
     $token = $request->headers->get('Authorization') ?: $request->query->get('token');
 
     if (!$token) {
@@ -113,7 +115,8 @@ class QuoteApiController
       return new JsonResponse(['error' => 'Unable to process required API token:' . $token], 422);
     }
 
-    $range = \Drupal::config('quote_api.settings')->get('api_range');
+    // Get the configurable range value that is used with the API secret
+    $range = \Drupal::config('quote_api.settings')->get('api_range') ?: 15;
     $currentTime = floor(time() / 60);
     $delta = floor($currentTime / ($range * 60)) * ($range * 60);
 
