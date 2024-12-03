@@ -187,8 +187,6 @@ class QuoteApiController
       if (is_numeric($target)) {
         $query->condition('field_person', (int) $target);
       } else {
-        $decodedTarget = html_entity_decode($target, ENT_QUOTES, 'UTF-8');
-
         // Get the expected Taxonomy id from the given name
         $term_ids = $term_ids = $this->filterByTarget($target);
 
