@@ -4,7 +4,7 @@ default: build
 
 build:
 	@go build -ldflags="-s -w"
-	@npx tailwindcss -m -i ./cmd/templates/css/main.css -o ./static/css/main.css
+	@bun tailwindcss -m -i ./cmd/templates/css/main.css -o ./static/css/main.css
 
 run: build
 	@./frontend
