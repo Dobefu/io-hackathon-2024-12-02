@@ -13,10 +13,9 @@ use Drupal\taxonomy\Entity\Term;
  */
 class QuoteApiController
 {
-
-
   /**
-   * Helper method to get term IDs from a target (plain text, HTML entity, or Base64).
+   * Helper method to get term IDs from a target as plain text, HTML entity
+   *  or Base64 encoded string.
    *
    * @param string $target
    *   The target string (could be a plain text, HTML entity, or Base64).
@@ -24,7 +23,7 @@ class QuoteApiController
    * @return array
    *   Array of term IDs found for the target.
    */
-  private function filterByTarget($target)
+  private function filterByTarget(string $target)
   {
     $term_ids = $this->queryFromTaxonomyValue($target)->execute();
 
@@ -33,7 +32,7 @@ class QuoteApiController
       $decoded_target = html_entity_decode($target, ENT_QUOTES, 'UTF-8');
       $term_ids = $this->queryFromTaxonomyValue($decoded_target)->execute();
 
-      // Search with successfull decoded Base64 value:
+      // Search with successfull decoded Base64 value only:
       if (empty($term_ids)) {
         $decoded_target = base64_decode($target, true);
 
@@ -47,8 +46,23 @@ class QuoteApiController
   }
 
 
-  private function queryFromTaxonomyValue($value)
+
+  /**
+   * Constructs the additional Taxonomy query to get any Quote with the given
+   * target value.
+   *
+   * @param string $value
+   *  The optional target value.
+   *
+   * @return mixed \Drupal\Core\Entity\Query\QueryInterface
+   *  Returns the optional Query interface.
+   */
+  private function queryFromTaxonomyValue(string $value)
   {
+    if (!$value) {
+      return;
+    }
+
     $query = \Drupal::entityQuery('taxonomy_term')
       ->condition('name', $value, 'LIKE')
       ->condition('vid', 'people')
