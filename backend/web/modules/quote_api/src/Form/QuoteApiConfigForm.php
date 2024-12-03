@@ -5,9 +5,6 @@ namespace Drupal\quote_api\Form;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
 
-const HOURS = 60;
-const DEFAULT_RANGE = 15;
-
 class QuoteApiConfigForm extends ConfigFormBase
 {
   /**
@@ -52,7 +49,7 @@ class QuoteApiConfigForm extends ConfigFormBase
 
     // Defines the API key range in minutes that is used for the timestamp based
     // API secret.
-    $apiRange = $config->get('api_range') ?: DEFAULT_RANGE;
+    $apiRange = $config->get('api_range') ?: 15;
     $form['api_range'] = [
       '#type' => 'number',
       '#title' => $this->t('API Range'),
@@ -82,8 +79,8 @@ class QuoteApiConfigForm extends ConfigFormBase
       ->set('api_range', $apiRange)
       ->save();
 
-    $currentTime = floor(time() / HOURS);
-    $delta = floor($currentTime / $apiRange) * $apiRange;
+    $currentTime = floor(time() / 60);
+    $delta = floor($currentTime / ($apiRange * 60)) * ($apiRange * 60);
 
     if ($apiSecret) {
       $argon2_hash = password_hash($apiSecret . $delta, 'argon2id', [

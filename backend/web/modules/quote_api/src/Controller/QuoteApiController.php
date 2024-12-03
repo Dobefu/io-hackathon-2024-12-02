@@ -72,16 +72,33 @@ class QuoteApiController
     return $query;
   }
 
+  /**
+   * Authentication helper that verifies the current user with the expected
+   * module permissions or check the optional API credentials instead.
+   *
+   * The Request should return a valid JSON response with additional error
+   * information while any of the verification fails.
+   *
+   * @param \Symfony\Component\HttpFoundation\Request $request
+   * @return JsonResponse|null
+   */
   private function checkAccess(Request $request)
   {
+    // Get the current user
+    $currentUser = \Drupal::currentUser();
+
+    if ($currentUser->isAuthenticated()) {
+      if (!$currentUser->hasPermission('quote_api.access')) {
+        return new JsonResponse(['error' => 'Access denied: Insufficient permissions.'], 403);
+      }
+
+      return null;
+    }
+
     $secret = \Drupal::config('quote_api.settings')->get('api_secret');
     if (!$secret) {
       return new JsonResponse(['error', 'API Endpoint not available'], 500);
     }
-
-    $range = \Drupal::config('quote_api.settings')->get('api_range');
-    $currentTime = floor(time() / 60);
-    $delta = floor($currentTime / $range) * $range;
 
     // Implements basic Api token usage via Argon2 that is defined from the
     // expected API secret.
@@ -96,8 +113,12 @@ class QuoteApiController
       return new JsonResponse(['error' => 'Unable to process required API token:' . $token], 422);
     }
 
+    $range = \Drupal::config('quote_api.settings')->get('api_range');
+    $currentTime = floor(time() / 60);
+    $delta = floor($currentTime / ($range * 60)) * ($range * 60);
+
     if (!password_verify($secret . $delta, $hash)) {
-      return new JsonResponse(['error' => 'Token rejected: ' . $token], 403);
+      return new JsonResponse(['error' => 'Token rejected or expired: ' . $token], 403);
     }
 
     return null;
