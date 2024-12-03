@@ -26,12 +26,15 @@ class QuoteApiController
     // Fetch published quotes of content type 'quote'.
     $query = \Drupal::entityQuery('node')
       ->condition('type', 'quote')
-      ->condition('status', 1);
+      ->condition('status', 1)
+      ->accessCheck(FALSE); // Use API key instead, .
+    ;
 
     $nodes = $query->execute();
     $quotes = Node::loadMultiple($nodes);
 
     $response = [];
+
     foreach ($quotes as $quote) {
       $person = $quote->get('field_person')->entity;
       $response[] = [
@@ -42,6 +45,8 @@ class QuoteApiController
       ];
     }
 
-    return new JsonResponse($response);
+    $status = count($response) ? 200 : 204;
+
+    return new JsonResponse($response, $status);
   }
 }
