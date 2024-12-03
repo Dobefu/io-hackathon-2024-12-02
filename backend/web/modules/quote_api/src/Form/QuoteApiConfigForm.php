@@ -39,13 +39,22 @@ class QuoteApiConfigForm extends ConfigFormBase
     ];
 
     // Generate the Argon2 hash of the API secret and display it as a read-only field
-    $api_token = $config->get('api_token') ?: '';
+    $apiToken = $config->get('api_token') ?: '';
     $form['api_token'] = [
       '#type' => 'textarea',
       '#title' => $this->t('API Token'),
-      '#default_value' => $api_token,
+      '#default_value' => $apiToken,
       '#readonly' => TRUE,
       '#description' => $this->t('Argon2 Generated Api Token generated from the current API Secret.'),
+    ];
+
+    $apiRange = $config->get('api_range') ?: 15;
+    $form['api_range'] = [
+      '#type' => 'number',
+      '#title' => $this->t('API Range'),
+      '#default_value' => $apiRange,
+      '#description' => $this->t('Expire the generated key in minutes:'),
+      '#required' => TRUE,
     ];
 
     return parent::buildForm($form, $form_state);
@@ -57,14 +66,23 @@ class QuoteApiConfigForm extends ConfigFormBase
   public function submitForm(array &$form, FormStateInterface $form_state)
   {
     // Generate the Argon2 hash of the API secret
-    $api_secret = $form_state->getValue('api_secret');
+    $apiSecret = $form_state->getValue('api_secret');
     $this
       ->config('quote_api.settings')
-      ->set('api_secret', $form_state->getValue('api_secret'))
+      ->set('api_secret', $apiSecret)
       ->save();
 
-    if ($api_secret) {
-      $argon2_hash = password_hash($api_secret, 'argon2id', [
+    $apiRange = $form_state->getValue('api_range');
+    $this
+      ->config('quote_api.settings')
+      ->set('api_range', $apiRange)
+      ->save();
+
+    $currentTime = floor(time() / 60);
+    $delta = floor($currentTime / $apiRange) * $apiRange;
+
+    if ($apiSecret) {
+      $argon2_hash = password_hash($apiSecret . $delta, 'argon2id', [
         'memory_cost' => 256,
         'time_cost' => 1,
         'threads' => 1

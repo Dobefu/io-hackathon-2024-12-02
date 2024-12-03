@@ -79,6 +79,10 @@ class QuoteApiController
       return new JsonResponse(['error', 'API Endpoint not available'], 500);
     }
 
+    $range = \Drupal::config('quote_api.settings')->get('api_range');
+    $currentTime = floor(time() / 60);
+    $delta = floor($currentTime / $range) * $range;
+
     // Implements basic Api token usage via Argon2 that is defined from the
     // expected API secret.
     $token = $request->headers->get('Authorization') ?: $request->query->get('token');
@@ -92,7 +96,7 @@ class QuoteApiController
       return new JsonResponse(['error' => 'Unable to process required API token:' . $token], 422);
     }
 
-    if (!password_verify($secret, $hash)) {
+    if (!password_verify($secret . $delta, $hash)) {
       return new JsonResponse(['error' => 'Token rejected: ' . $token], 403);
     }
 
