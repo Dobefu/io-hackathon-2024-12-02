@@ -1,0 +1,6 @@
+quote_api.settings_menu:
+  title: "Quote API Configuration"
+  description: "Configure the API key for the Quote API."
+  parent: system.admin_config_services
+  route_name: quote_api.config
+  menu_name: "BAR"

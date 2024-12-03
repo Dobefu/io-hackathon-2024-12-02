@@ -5,3 +5,11 @@ quote_api.get:
     _format: "json"
   requirements:
     _access: "TRUE"
+
+quote_api.config:
+  path: "/admin/config/services/quote-api"
+  defaults:
+    _form: '\Drupal\quote_api\Form\ApiKeyConfigForm'
+    _title: "Quote API Configuration"
+  requirements:
+    _permission: "administer site configuration"
