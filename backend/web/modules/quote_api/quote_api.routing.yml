@@ -9,7 +9,7 @@ quote_api.get:
 quote_api.config:
   path: "/admin/config/services/quote-api"
   defaults:
-    _form: '\Drupal\quote_api\Form\ApiKeyConfigForm'
+    _form: '\Drupal\quote_api\Form\QuoteApiConfigForm'
     _title: "Quote API Configuration"
   requirements:
     _permission: "administer site configuration"

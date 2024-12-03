@@ -84,11 +84,32 @@ class QuoteApiController
   public function getQuotes(Request $request)
   {
 
+    $token = $request->headers->get('Authorization') ?: $request->query->get('token');
+    $secret = \Drupal::config('quote_api.settings')->get('api_secret');
+
+
+    if (!$secret) {
+      return new JsonResponse(['error', 'Endpoint not available'], 500);
+    }
+
+    if (!$token) {
+      return new JsonResponse(['error', 'Unable to continue from undefined token!'], 400);
+    }
+
+    $hash = base64_decode($token);
+    if (!$hash) {
+      return new JsonResponse(['error' => 'Unable to process required API token:' . $token], 422);
+    }
+
+    if (!password_verify($secret, $hash)) {
+      return new JsonResponse(['error' => 'Token rejected: ' . $token], 403);
+    }
+
+
     // Filter from the additional Person Taxonomy name value or ID
     $target = $request->query->get('target');
     $sortBy = $request->query->get('sortBy', 'date');
     $sortOrder = $request->query->get('sortOrder', 'ASC');
-
 
     // Fetch published quotes of content type 'quote'.
     $query = \Drupal::entityQuery('node')
