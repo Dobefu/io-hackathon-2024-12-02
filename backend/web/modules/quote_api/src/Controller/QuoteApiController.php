@@ -53,7 +53,7 @@ class QuoteApiController extends ControllerBase
         ->range(0, 1);
     }
 
-    return $this->quoteApiService->parseContent($query);
+    return $this->quoteApiService->parseContent($query, TRUE);
   }
 
 
