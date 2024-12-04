@@ -1,5 +1,7 @@
 {{ define "page" }}
-{{ template "page-title" "Quotes" }}
+<div class="flex items-center gap-4">
+  {{ template "page-title" "Quotes" }}
+</div>
 
 <div class="py-4 grid grid-cols-2 max-sm:grid-cols-1 gap-4">
   {{ range $quote := .Quotes }}
