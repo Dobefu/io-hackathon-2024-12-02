@@ -142,7 +142,7 @@ class QuoteApiService
    * @return array
    *   Array of term IDs found for the target.
    */
-  public function filterByTarget(string $target, string $type = 'person')
+  public function filterByTarget(string $target, string $type = 'people')
   {
     $term_ids = $this->createTaxonomyQuery($target, $type)->execute();
 

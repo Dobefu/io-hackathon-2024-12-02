@@ -95,7 +95,7 @@ class QuoteApiController extends ControllerBase
         $query->condition('field_person', (int) $person);
       } else {
         // Get the expected Taxonomy id from the given name
-        $term_ids = $term_ids = $this->quoteApiService->filterByTarget($person);
+        $term_ids = $this->quoteApiService->filterByTarget($person);
 
         if (empty($term_ids)) {
           return new JsonResponse(['error' => 'Unable to find any quote from ' . $person], 404);
