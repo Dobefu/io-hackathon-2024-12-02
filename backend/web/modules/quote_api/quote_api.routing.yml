@@ -1,5 +1,5 @@
 quote_api.quotes:
-  path: "/api/quotes"
+  path: "/api/quote/get"
   defaults:
     _controller: '\Drupal\quote_api\Controller\QuoteApiController::getQuotes'
     _format: "json"
@@ -7,7 +7,7 @@ quote_api.quotes:
     _access: "TRUE"
 
 quote_api.quote:
-  path: "/api/quote"
+  path: "/api/quote/get/{id}"
   defaults:
     _controller: '\Drupal\quote_api\Controller\QuoteApiController::getQuote'
     _format: "json"
