@@ -1,0 +1,16 @@
+{{ define "quote--teaser" }}
+
+<div class="shadow-md border p-4 text-center rounded-xl overflow-hidden" style="view-transition-name: quote-{{ .id }}">
+  <div class="italic text-lg font-semibold">
+    <a href="/quote/9001">
+      <span class="text-2xl text-gray-500">&ldquo;</span><!--
+    --><span class="text-xl">{{- .title -}}</span><!--
+    --><span class="text-2xl text-gray-500">&rdquo;</span>
+    </a>
+  </div>
+  <a href="/quote/9001">
+    <span class="text-gray-700">-&nbsp;{{ .person }}</span>
+  </a>
+</div>
+
+{{ end }}

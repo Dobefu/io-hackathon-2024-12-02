@@ -9,12 +9,13 @@ import (
 	"os"
 )
 
-func QuotesOverview(w http.ResponseWriter, r *http.Request) {
+func QuoteById(w http.ResponseWriter, r *http.Request) {
 	templates := utils.CollectGlobalTemplates()
-	templates = append(templates, "cmd/templates/pages/quotes.html.tmpl")
-	templates = append(templates, "cmd/templates/partials/quote--teaser.html.tmpl")
+	templates = append(templates, "cmd/templates/pages/quote.html.tmpl")
+	templates = append(templates, "cmd/templates/partials/quote.html.tmpl")
 
-	quotes, err := getQuotes()
+	id := r.PathValue("id")
+	quote, err := getQuoteById(id)
 
 	if err != nil {
 		http.NotFound(w, r)
@@ -22,7 +23,7 @@ func QuotesOverview(w http.ResponseWriter, r *http.Request) {
 	}
 
 	data := make(map[string]interface{})
-	data["Quotes"] = quotes
+	data["Quote"] = quote
 
 	tpl := template.Must(template.ParseFiles(templates...))
 	err = tpl.Execute(w, &data)
@@ -32,9 +33,9 @@ func QuotesOverview(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func getQuotes() (interface{}, error) {
+func getQuoteById(id string) (interface{}, error) {
 	endpoint := os.Getenv("API_ENDPOINT")
-	url := fmt.Sprintf("%s/quotes?token=%s", endpoint, os.Getenv("API_KEY"))
+	url := fmt.Sprintf("%s/quote?token=%s", endpoint, os.Getenv("API_KEY"))
 
 	response, err := http.Get(url)
 
@@ -44,12 +45,12 @@ func getQuotes() (interface{}, error) {
 
 	defer response.Body.Close()
 
-	var output interface{}
+	var output []interface{}
 	err = json.NewDecoder(response.Body).Decode(&output)
 
 	if err != nil {
 		return nil, err
 	}
 
-	return output, nil
+	return output[0], nil
 }

@@ -1,0 +1,8 @@
+{{ define "page" }}
+{{ template "page-title" "Quotes" }}
+
+<div class="py-4 max-sm:grid-cols-1 gap-4">
+  {{ template "quote" .Quote }}
+</div>
+
+{{ end }}

@@ -3,7 +3,7 @@
 
 <div class="py-4 grid grid-cols-2 max-sm:grid-cols-1 gap-4">
   {{ range $quote := .Quotes }}
-  {{ template "quote" $quote }}
+  {{ template "quote--teaser" $quote }}
   {{ end }}
 </div>
 
