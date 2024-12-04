@@ -92,22 +92,6 @@ class QuoteApiService
     return null;
   }
 
-  private function createQuoteQuery(Request $request)
-  {
-    $unauthorized = $this->checkAccess($request);
-
-    if ($unauthorized) {
-      return $unauthorized;
-    }
-
-    $query = $this->nodeStorage->getQuery()
-      ->condition('type', 'quote')
-      ->condition('status', 1)
-      ->accessCheck(FALSE);
-
-    return $this->sendResponse($query);
-  }
-
   /**
    * Constructs the additional Taxonomy query to get any Quote with the given
    * target value.
@@ -164,6 +148,16 @@ class QuoteApiService
     return $term_ids;
   }
 
+  public function useQuery(string $type = 'quote'): QueryInterface
+  {
+    $query = $this->nodeStorage->getQuery()
+      ->condition('type', $type)
+      ->condition('status', 1)
+      ->accessCheck(FALSE);
+
+    return $query;
+  }
+
   public function parseQuery(QueryInterface $query): JsonResponse | null
   {
     $entry = $query->execute();
@@ -171,22 +165,19 @@ class QuoteApiService
     /** @var \Drupal\node\Entity\Node[] $nodes */
     $nodes = $this->nodeStorage->loadMultiple($entry);
 
-
-    if (!$nodes || empty($nodes)) {
-      return null;
-    }
-
     $response = [];
 
-    foreach ($nodes as $node) {
-      $person = $node->get('field_person');
+    if ($nodes && !empty($nodes)) {
+      foreach ($nodes as $node) {
+        $person = $node->get('field_person');
 
-      $response[] = [
-        'body' => $node->get('body')->value,
-        'id' => $node->id(),
-        'person' => $person->entity?->getName(),
-        'title' => $node->getTitle(),
-      ];
+        $response[] = [
+          'body' => $node->get('body')->value,
+          'id' => $node->id(),
+          'person' => $person->entity?->getName(),
+          'title' => $node->getTitle(),
+        ];
+      }
     }
 
     if (!count($response)) {

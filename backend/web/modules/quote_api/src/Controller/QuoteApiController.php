@@ -36,25 +36,22 @@ class QuoteApiController extends ControllerBase
   public function getQuote(Request $request, string $id = null)
   {
     $unauthorized = $this->quoteApiService->checkAccess($request);
+
     if ($unauthorized) {
       return $unauthorized;
     }
 
-    $quote = $request->query->get('quote');
-
-    // Create the base query to get published 'quote' nodes.
-    $query = \Drupal::entityQuery('node')
-      ->condition('type', 'quote')
-      ->condition('status', 1)
-      ->accessCheck(FALSE);
+    $query = $this->quoteApiService->useQuery();
 
     if ($id && $query) {
       $query->condition('nid', $id);
     }
 
-    $query
-      ->sort('created', 'DESC')
-      ->range(0, 1);
+    if ($query) {
+      $query
+        ->sort('created', 'DESC')
+        ->range(0, 1);
+    }
 
     return $this->quoteApiService->parseQuery($query);
   }
@@ -69,7 +66,7 @@ class QuoteApiController extends ControllerBase
    * @return \Symfony\Component\HttpFoundation\JsonResponse
    *  Expected JSON Response containing quote data.
    */
-  public function getQuotes(Request $request)
+  public function getQuotes(Request $request): JsonResponse
   {
     $unauthorized = $this->quoteApiService->checkAccess($request);
 
@@ -82,12 +79,11 @@ class QuoteApiController extends ControllerBase
     $sortBy = $request->query->get('sortBy', 'date');
     $sortOrder = $request->query->get('sortOrder', 'ASC');
 
-    // Fetch published quotes of content type 'quote'.
-    $query = \Drupal::entityQuery('node')
-      ->condition('type', 'quote')
-      ->condition('status', 1)
-      ->accessCheck(FALSE); // Use API key instead, .
-    ;
+    $query = $this->quoteApiService->useQuery();
+
+    if (!$query) {
+      return new JsonResponse(['Unable to use getQuotes from undefinde query'], 400);
+    }
 
     // Apply additional filtering by `people` Taxonomy name or ID from:
     if ($person) {
@@ -119,4 +115,6 @@ class QuoteApiController extends ControllerBase
 
     return $this->quoteApiService->parseQuery($query);
   }
+
+  public function getPeople() {}
 }
