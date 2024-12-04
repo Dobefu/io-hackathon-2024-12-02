@@ -2,18 +2,30 @@
 
 namespace Drupal\quote_api\Controller;
 
+use Drupal\Core\Controller\ControllerBase;
+use Symfony\Component\DependencyInjection\ContainerInterface;
+
 use Drupal\Core\Entity\Query\QueryInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Drupal\node\Entity\Node;
-use Drupal\taxonomy\Entity\Term;
 
+use Drupal\quote_api\Service\QuoteApiService;
 
 /**
  * Controller for the Quote API.
  */
-class QuoteApiController
+class QuoteApiController extends ControllerBase
 {
+  public function __construct(protected readonly QuoteApiService $quoteApiService) {}
+
+  public static function create(ContainerInterface $container)
+  {
+    return new static(
+      $container->get('quote_api.base')
+    );
+  }
+
   /**
    * Helper method to get term IDs from a target as plain text, HTML entity
    * or Base64 encoded string.
@@ -73,62 +85,7 @@ class QuoteApiController
   }
 
   /**
-   * Authentication helper that verifies the current user with the expected
-   * module permissions or check the optional API credentials instead.
-   *
-   * The Request should return a valid JSON response with additional error
-   * information while any of the verification fails.
-   *
-   * @param \Symfony\Component\HttpFoundation\Request $request
-   * @return JsonResponse|null
-   */
-  private function checkAccess(Request $request)
-  {
-    // Get the current user and check if the required permissions are available.
-    $currentUser = \Drupal::currentUser();
-
-    if ($currentUser->isAuthenticated()) {
-      if (!$currentUser->hasPermission('quote_api.access')) {
-        return new JsonResponse(['error' => 'Access denied: Insufficient permissions.'], 403);
-      }
-
-      return null;
-    }
-
-    // Check with the API credentials if no user is logged in or does not have
-    // the required permissions.
-    $secret = \Drupal::config('quote_api.settings')->get('api_secret');
-    if (!$secret) {
-      return new JsonResponse(['error', 'API Endpoint not available'], 500);
-    }
-
-    // Implements basic API token usage via Argon2 that is defined from the
-    // expected API secret and timestamp based of the API Range configuration.
-    $token = $request->headers->get('Authorization') ?: $request->query->get('token');
-
-    if (!$token) {
-      return new JsonResponse(['error', 'No `token` parameter or `Authorization` header detected from the initial Request!'], 400);
-    }
-
-    $hash = base64_decode($token);
-    if (!$hash) {
-      return new JsonResponse(['error' => 'Unable to process required API token:' . $token], 422);
-    }
-
-    // Get the configurable range value that is used with the API secret
-    $range = \Drupal::config('quote_api.settings')->get('api_range') ?: 15;
-    $currentTime = floor(time() / 60);
-    $delta = floor($currentTime / ($range * 60)) * ($range * 60);
-
-    if (!password_verify($secret . $delta, $hash)) {
-      return new JsonResponse(['error' => 'Token rejected or expired: ' . $token], 403);
-    }
-
-    return null;
-  }
-
-  /**
-   * Returns the latest or random existing Quote.
+   * Returns the latest quote.
    *
    * @param \Symfony\Component\HttpFoundation\Request $request
    * @return \Symfony\Component\HttpFoundation\JsonResponse
@@ -136,7 +93,7 @@ class QuoteApiController
    */
   public function getQuote(Request $request)
   {
-    $unauthorized = $this->checkAccess($request);
+    $unauthorized = $this->quoteApiService->checkAccess($request);
     if ($unauthorized) {
       return $unauthorized;
     }
@@ -164,7 +121,7 @@ class QuoteApiController
    */
   public function getQuotes(Request $request)
   {
-    $unauthorized = $this->checkAccess($request);
+    $unauthorized = $this->quoteApiService->checkAccess($request);
 
     if ($unauthorized) {
       return $unauthorized;

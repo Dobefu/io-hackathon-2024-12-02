@@ -1,0 +1,4 @@
+services:
+  quote_api.base:
+    class: Drupal\quote_api\Service\QuoteApiService
+    arguments: ["@current_user", "@config.factory", "@entity_type.manager"]
