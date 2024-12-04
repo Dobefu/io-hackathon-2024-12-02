@@ -6,6 +6,7 @@ namespace Drupal\quote_api\Service;
 
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\Entity\Query\QueryInterface;
 use Drupal\Core\Session\AccountProxyInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -18,7 +19,10 @@ class QuoteApiService
 
   private $readAccess = 'quote_api.access';
   private $configName = 'quote_api.settings';
+
   private $apiSecret;
+  private $nodeStorage;
+  private $taxonomyStorage;
 
   /**
    * Constructs a QuoteApiService object.
@@ -31,6 +35,9 @@ class QuoteApiService
     $configFactory = $this->configFactory->get($this->configName);
 
     $this->apiSecret = $configFactory->get('api_secret');
+
+    $this->taxonomyStorage = $this->entityTypeManager->getStorage('taxonomy_term');
+    $this->nodeStorage = $this->entityTypeManager->getStorage('node');
   }
 
 
@@ -83,5 +90,107 @@ class QuoteApiService
     }
 
     return null;
+  }
+
+  private function createQuoteQuery(Request $request)
+  {
+    $unauthorized = $this->checkAccess($request);
+
+    if ($unauthorized) {
+      return $unauthorized;
+    }
+
+    $query = $this->nodeStorage->getQuery()
+      ->condition('type', 'quote')
+      ->condition('status', 1)
+      ->accessCheck(FALSE);
+
+    return $this->sendResponse($query);
+  }
+
+  /**
+   * Constructs the additional Taxonomy query to get any Quote with the given
+   * target value.
+   *
+   * @param string $value
+   *  The optional target value.
+   *
+   * @return mixed \Drupal\Core\Entity\Query\QueryInterface
+   *  Returns the optional Query interface.
+   */
+  private function createTaxonomyQuery(string $value)
+  {
+    if (!$value) {
+      return;
+    }
+
+    $query = $this->taxonomyStorage->getQuery()
+      ->condition('name', $value, 'LIKE')
+      ->condition('vid', 'people')
+      ->accessCheck(FALSE);
+
+    return $query;
+  }
+
+  /**
+   * Helper method to get term IDs from a target as plain text, HTML entity
+   * or Base64 encoded string.
+   *
+   * @param string $target
+   *   The target string (could be a plain text, HTML entity, or Base64).
+   *
+   * @return array
+   *   Array of term IDs found for the target.
+   */
+  public function filterByTarget(string $target)
+  {
+    $term_ids = $this->createTaxonomyQuery($target)->execute();
+
+    if (empty($term_ids)) {
+      // If no term found, try to decode the target as HTML entities
+      $decoded_target = html_entity_decode($target, ENT_QUOTES, 'UTF-8');
+      $term_ids = $this->createTaxonomyQuery($decoded_target)->execute();
+
+      // Search with successfull decoded Base64 value only:
+      if (empty($term_ids)) {
+        $decoded_target = base64_decode($target, true);
+
+        if ($decoded_target !== false) {
+          $term_ids = $this->createTaxonomyQuery($decoded_target)->execute();
+        }
+      }
+    }
+
+    return $term_ids;
+  }
+
+  public function parseQuery(QueryInterface $query): JsonResponse | null
+  {
+    $entry = $query->execute();
+
+    /** @var \Drupal\node\Entity\Node[] $nodes */
+    $nodes = $this->nodeStorage->loadMultiple($entry);
+
+    if (!$nodes || empty($nodes)) {
+      return null;
+    }
+
+    $response = [];
+
+    foreach ($nodes as $node) {
+      $person = $node->get('field_person')->enity;
+      $response[] = [
+        'body' => $node->get('body')->value,
+        'id' => $node->id(),
+        'person' => $person ? $person->getName() : null,
+        'title' => $node->getTitle(),
+      ];
+    }
+
+    if (!count($response)) {
+      return new JsonResponse(['error' => 'Quote not found'], 404);
+    }
+
+    return new JsonResponse($response);
   }
 }

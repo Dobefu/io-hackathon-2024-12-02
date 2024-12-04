@@ -27,64 +27,6 @@ class QuoteApiController extends ControllerBase
   }
 
   /**
-   * Helper method to get term IDs from a target as plain text, HTML entity
-   * or Base64 encoded string.
-   *
-   * @param string $target
-   *   The target string (could be a plain text, HTML entity, or Base64).
-   *
-   * @return array
-   *   Array of term IDs found for the target.
-   */
-  private function filterByTarget(string $target)
-  {
-    $term_ids = $this->queryFromTaxonomyValue($target)->execute();
-
-    if (empty($term_ids)) {
-      // If no term found, try to decode the target as HTML entities
-      $decoded_target = html_entity_decode($target, ENT_QUOTES, 'UTF-8');
-      $term_ids = $this->queryFromTaxonomyValue($decoded_target)->execute();
-
-      // Search with successfull decoded Base64 value only:
-      if (empty($term_ids)) {
-        $decoded_target = base64_decode($target, true);
-
-        if ($decoded_target !== false) {
-          $term_ids = $this->queryFromTaxonomyValue($decoded_target)->execute();
-        }
-      }
-    }
-
-    return $term_ids;
-  }
-
-
-
-  /**
-   * Constructs the additional Taxonomy query to get any Quote with the given
-   * target value.
-   *
-   * @param string $value
-   *  The optional target value.
-   *
-   * @return mixed \Drupal\Core\Entity\Query\QueryInterface
-   *  Returns the optional Query interface.
-   */
-  private function queryFromTaxonomyValue(string $value)
-  {
-    if (!$value) {
-      return;
-    }
-
-    $query = \Drupal::entityQuery('taxonomy_term')
-      ->condition('name', $value, 'LIKE')
-      ->condition('vid', 'people')
-      ->accessCheck(FALSE);
-
-    return $query;
-  }
-
-  /**
    * Returns the latest quote.
    *
    * @param \Symfony\Component\HttpFoundation\Request $request
@@ -167,31 +109,6 @@ class QuoteApiController extends ControllerBase
         break;
     }
 
-    return $this->sendResponse($query);
-  }
-
-  private function sendResponse(QueryInterface $query)
-  {
-
-    $nodes = $query->execute();
-    $quotes = Node::loadMultiple($nodes);
-
-    $response = [];
-
-    foreach ($quotes as $quote) {
-      $person = $quote->get('field_person')->entity;
-      $response[] = [
-        'id' => $quote->id(),
-        'title' => $quote->getTitle(),
-        'body' => $quote->get('body')->value,
-        'person' => $person ? $person->getName() : null,
-      ];
-    }
-
-    if (!count($response)) {
-      return new JsonResponse(['error' => 'Quotes not found'], 404);
-    }
-
-    return new JsonResponse($response);
+    return $this->quoteApiService->parseQuery($query);
   }
 }
