@@ -38,7 +38,7 @@ func QuoteById(w http.ResponseWriter, r *http.Request) {
 
 func getQuoteById(id string) (interface{}, error) {
 	endpoint := os.Getenv("API_ENDPOINT")
-	url := fmt.Sprintf("%s/quotes?target=%s&token=%s", endpoint, id, os.Getenv("API_KEY"))
+	url := fmt.Sprintf("%s/quote/get/%s?token=%s", endpoint, id, os.Getenv("API_KEY"))
 
 	response, err := http.Get(url)
 

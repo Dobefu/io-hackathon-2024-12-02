@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"frontend/cmd/server/utils"
 	"html/template"
+	"log"
 	"net/http"
 	"os"
 )
@@ -17,6 +18,7 @@ func QuotesOverview(w http.ResponseWriter, r *http.Request) {
 	quotes, err := getQuotes()
 
 	if err != nil {
+		log.Println(err.Error())
 		http.NotFound(w, r)
 		return
 	}
@@ -28,13 +30,14 @@ func QuotesOverview(w http.ResponseWriter, r *http.Request) {
 	err = tpl.Execute(w, &data)
 
 	if err != nil {
+		log.Println(err.Error())
 		return
 	}
 }
 
 func getQuotes() (interface{}, error) {
 	endpoint := os.Getenv("API_ENDPOINT")
-	url := fmt.Sprintf("%s/quotes?token=%s", endpoint, os.Getenv("API_KEY"))
+	url := fmt.Sprintf("%s/quote/get?token=%s", endpoint, os.Getenv("API_KEY"))
 
 	response, err := http.Get(url)
 
