@@ -15,7 +15,8 @@ func QuotesOverview(w http.ResponseWriter, r *http.Request) {
 	templates = append(templates, "cmd/templates/pages/quotes.html.tmpl")
 	templates = append(templates, "cmd/templates/partials/quote--teaser.html.tmpl")
 
-	quotes, err := getQuotes()
+	query := r.URL.Query()
+	quotes, err := getQuotes(query.Get("person"))
 
 	if err != nil {
 		log.Println(err.Error())
@@ -25,6 +26,7 @@ func QuotesOverview(w http.ResponseWriter, r *http.Request) {
 
 	data := make(map[string]interface{})
 	data["Quotes"] = quotes
+	data["Search"] = query
 
 	tpl := template.Must(template.ParseFiles(templates...))
 	err = tpl.Execute(w, &data)
@@ -35,9 +37,13 @@ func QuotesOverview(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func getQuotes() (interface{}, error) {
+func getQuotes(person string) (interface{}, error) {
 	endpoint := os.Getenv("API_ENDPOINT")
 	url := fmt.Sprintf("%s/quote/get?token=%s", endpoint, os.Getenv("API_KEY"))
+
+	if person != "" {
+		url = fmt.Sprintf("%s&person=%s", url, person)
+	}
 
 	response, err := http.Get(url)
 
