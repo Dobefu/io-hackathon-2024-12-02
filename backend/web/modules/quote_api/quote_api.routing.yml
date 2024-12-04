@@ -1,3 +1,11 @@
+quote_api.people:
+  path: "/api/quote/people"
+  defaults:
+    _controller: '\Drupal\quote_api\Controller\QuoteApiController::getPeople'
+    _format: "json"
+  requirements:
+    _access: "TRUE"
+
 quote_api.quotes:
   path: "/api/quote/get"
   defaults:
