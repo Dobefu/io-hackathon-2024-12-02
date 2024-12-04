@@ -118,7 +118,7 @@ class QuoteApiService
    * @return mixed \Drupal\Core\Entity\Query\QueryInterface
    *  Returns the optional Query interface.
    */
-  private function createTaxonomyQuery(string $value)
+  private function createTaxonomyQuery(string $value, string $taxonomyType = 'people')
   {
     if (!$value) {
       return;
@@ -126,7 +126,7 @@ class QuoteApiService
 
     $query = $this->taxonomyStorage->getQuery()
       ->condition('name', $value, 'LIKE')
-      ->condition('vid', 'people')
+      ->condition('vid', $taxonomyType)
       ->accessCheck(FALSE);
 
     return $query;
@@ -142,21 +142,21 @@ class QuoteApiService
    * @return array
    *   Array of term IDs found for the target.
    */
-  public function filterByTarget(string $target)
+  public function filterByTarget(string $target, string $type = 'person')
   {
-    $term_ids = $this->createTaxonomyQuery($target)->execute();
+    $term_ids = $this->createTaxonomyQuery($target, $type)->execute();
 
     if (empty($term_ids)) {
       // If no term found, try to decode the target as HTML entities
       $decoded_target = html_entity_decode($target, ENT_QUOTES, 'UTF-8');
-      $term_ids = $this->createTaxonomyQuery($decoded_target)->execute();
+      $term_ids = $this->createTaxonomyQuery($decoded_target, $type)->execute();
 
       // Search with successfull decoded Base64 value only:
       if (empty($term_ids)) {
         $decoded_target = base64_decode($target, true);
 
         if ($decoded_target !== false) {
-          $term_ids = $this->createTaxonomyQuery($decoded_target)->execute();
+          $term_ids = $this->createTaxonomyQuery($decoded_target, $type)->execute();
         }
       }
     }
@@ -171,6 +171,7 @@ class QuoteApiService
     /** @var \Drupal\node\Entity\Node[] $nodes */
     $nodes = $this->nodeStorage->loadMultiple($entry);
 
+
     if (!$nodes || empty($nodes)) {
       return null;
     }
@@ -178,11 +179,12 @@ class QuoteApiService
     $response = [];
 
     foreach ($nodes as $node) {
-      $person = $node->get('field_person')->enity;
+      $person = $node->get('field_person');
+
       $response[] = [
         'body' => $node->get('body')->value,
         'id' => $node->id(),
-        'person' => $person ? $person->getName() : null,
+        'person' => $person->entity?->getName(),
         'title' => $node->getTitle(),
       ];
     }

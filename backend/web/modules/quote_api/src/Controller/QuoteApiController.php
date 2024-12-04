@@ -33,22 +33,30 @@ class QuoteApiController extends ControllerBase
    * @return \Symfony\Component\HttpFoundation\JsonResponse
    *  Expected JSON Response containing a single quote.
    */
-  public function getQuote(Request $request)
+  public function getQuote(Request $request, string $id = null)
   {
     $unauthorized = $this->quoteApiService->checkAccess($request);
     if ($unauthorized) {
       return $unauthorized;
     }
 
+    $quote = $request->query->get('quote');
+
     // Create the base query to get published 'quote' nodes.
     $query = \Drupal::entityQuery('node')
       ->condition('type', 'quote')
       ->condition('status', 1)
-      ->accessCheck(FALSE)
+      ->accessCheck(FALSE);
+
+    if ($id && $query) {
+      $query->condition('nid', $id);
+    }
+
+    $query
       ->sort('created', 'DESC')
       ->range(0, 1);
 
-    return $this->sendResponse($query);
+    return $this->quoteApiService->parseQuery($query);
   }
 
 
@@ -70,7 +78,7 @@ class QuoteApiController extends ControllerBase
     }
 
     // Filter from the additional Person Taxonomy name value or ID
-    $target = $request->query->get('target');
+    $person = $request->query->get('person');
     $sortBy = $request->query->get('sortBy', 'date');
     $sortOrder = $request->query->get('sortOrder', 'ASC');
 
@@ -82,15 +90,15 @@ class QuoteApiController extends ControllerBase
     ;
 
     // Apply additional filtering by `people` Taxonomy name or ID from:
-    if ($target) {
-      if (is_numeric($target)) {
-        $query->condition('field_person', (int) $target);
+    if ($person) {
+      if (is_numeric($person)) {
+        $query->condition('field_person', (int) $person);
       } else {
         // Get the expected Taxonomy id from the given name
-        $term_ids = $term_ids = $this->filterByTarget($target);
+        $term_ids = $term_ids = $this->quoteApiService->filterByTarget($person);
 
         if (empty($term_ids)) {
-          return new JsonResponse(['error' => 'Unable to find any quote from ' . $target], 404);
+          return new JsonResponse(['error' => 'Unable to find any quote from ' . $person], 404);
         }
 
         $query->condition('field_person', reset($term_ids)); // Take the first matching term ID.
