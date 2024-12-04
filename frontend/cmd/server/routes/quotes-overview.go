@@ -12,6 +12,7 @@ import (
 func QuotesOverview(w http.ResponseWriter, r *http.Request) {
 	templates := utils.CollectGlobalTemplates()
 	templates = append(templates, "cmd/templates/pages/quotes.html.tmpl")
+	templates = append(templates, "cmd/templates/partials/quote.html.tmpl")
 
 	quotes, err := getQuotes()
 
