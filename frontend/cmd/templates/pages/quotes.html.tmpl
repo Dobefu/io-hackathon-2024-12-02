@@ -1,0 +1,13 @@
+{{ define "page" }}
+{{ template "page-title" "Quotes" }}
+
+<div>
+  {{ range $quote := .Quotes }}
+  <div>
+    &ldquo;{{ $quote.title }}&rdquo; - {{ $quote.person }}
+  </div>
+  {{ end }}
+</div>
+
+{{ end }}
+

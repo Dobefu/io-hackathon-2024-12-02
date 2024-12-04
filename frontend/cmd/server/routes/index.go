@@ -13,7 +13,7 @@ func Index(w http.ResponseWriter, r *http.Request) {
 	}
 
 	templates := utils.CollectGlobalTemplates()
-	templates = append(templates, "cmd/templates/pages/index.tpl.html")
+	templates = append(templates, "cmd/templates/pages/index.html.tmpl")
 
 	tpl := template.Must(template.ParseFiles(templates...))
 	err := tpl.Execute(w, nil)

@@ -2,9 +2,9 @@ package utils
 
 func CollectGlobalTemplates() []string {
 	return []string{
-		"cmd/templates/html.tpl.html",
-		"cmd/templates/layout/header.tpl.html",
-		"cmd/templates/layout/footer.tpl.html",
-		"cmd/templates/partials/page-title.tpl.html",
+		"cmd/templates/html.html.tmpl",
+		"cmd/templates/layout/header.html.tmpl",
+		"cmd/templates/layout/footer.html.tmpl",
+		"cmd/templates/partials/page-title.html.tmpl",
 	}
 }
