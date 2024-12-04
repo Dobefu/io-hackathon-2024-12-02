@@ -5,8 +5,20 @@
 
 <div class="py-4">
   <form id="quotes-search-form">
-    <input class="border px-3 py-2 rounded-lg shadow-inner" type="search" name="person"
-      value="{{ if lt 0 (len .Search) }}{{ index .Search.person 0 }}{{ end }}" />
+    <div class="flex gap-4 items-center">
+      <label for="quotes-search-form--person" class="font-semibold">Person</label>
+      <select id="quotes-search-form--person" class="border px-3 py-2 rounded-lg shadow-inner" name="person">
+        <option value="">&lt;Anyone&gt;</option>
+
+        {{ $search := .Search }}
+        {{ range $person := .People }}
+        <option value="{{ $person.id }}" {{ if lt 0 (len $search) }}{{ if eq (printf "%.0f" $person.id) (index
+          $search.person 0) }}selected="selected" {{ end }}{{ end }}>
+          {{ $person.name }}
+        </option>
+        {{ end }}
+      </select>
+    </div>
   </form>
 </div>
 
@@ -22,7 +34,7 @@
   const urlQuery = Object.fromEntries(new URLSearchParams(window.location.search))
 
   for (const input of form) {
-    if (input.tagName !== "INPUT") continue
+    if (input.tagName !== "INPUT" && input.tagName !== 'SELECT') continue
 
     const updateUrl = (e) => {
       const targetName = e.target.name
@@ -34,7 +46,7 @@
         if (!paramValue) delete urlQuery[paramName]
       }
 
-      const urlQueryString = new URLSearchParams(urlQuery).toString()
+      let urlQueryString = new URLSearchParams(urlQuery).toString()
       if (!!urlQueryString) urlQueryString = `?${urlQueryString}`
 
       window.location.href = `${urlwithoutQuery}${urlQueryString}`
