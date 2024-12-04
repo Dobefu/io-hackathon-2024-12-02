@@ -1,0 +1,5 @@
+quote_api.access:
+  title: "Access Quote API"
+  description: "Allows users to access the Quote API functionality."
+  restrict access: TRUE
+  type: perm

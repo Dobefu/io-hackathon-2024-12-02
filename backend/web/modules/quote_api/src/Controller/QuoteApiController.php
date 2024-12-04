@@ -2,15 +2,156 @@
 
 namespace Drupal\quote_api\Controller;
 
+use Drupal\Core\Entity\Query\QueryInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Drupal\node\Entity\Node;
+use Drupal\taxonomy\Entity\Term;
+
 
 /**
  * Controller for the Quote API.
  */
 class QuoteApiController
 {
+  /**
+   * Helper method to get term IDs from a target as plain text, HTML entity
+   * or Base64 encoded string.
+   *
+   * @param string $target
+   *   The target string (could be a plain text, HTML entity, or Base64).
+   *
+   * @return array
+   *   Array of term IDs found for the target.
+   */
+  private function filterByTarget(string $target)
+  {
+    $term_ids = $this->queryFromTaxonomyValue($target)->execute();
+
+    if (empty($term_ids)) {
+      // If no term found, try to decode the target as HTML entities
+      $decoded_target = html_entity_decode($target, ENT_QUOTES, 'UTF-8');
+      $term_ids = $this->queryFromTaxonomyValue($decoded_target)->execute();
+
+      // Search with successfull decoded Base64 value only:
+      if (empty($term_ids)) {
+        $decoded_target = base64_decode($target, true);
+
+        if ($decoded_target !== false) {
+          $term_ids = $this->queryFromTaxonomyValue($decoded_target)->execute();
+        }
+      }
+    }
+
+    return $term_ids;
+  }
+
+
+
+  /**
+   * Constructs the additional Taxonomy query to get any Quote with the given
+   * target value.
+   *
+   * @param string $value
+   *  The optional target value.
+   *
+   * @return mixed \Drupal\Core\Entity\Query\QueryInterface
+   *  Returns the optional Query interface.
+   */
+  private function queryFromTaxonomyValue(string $value)
+  {
+    if (!$value) {
+      return;
+    }
+
+    $query = \Drupal::entityQuery('taxonomy_term')
+      ->condition('name', $value, 'LIKE')
+      ->condition('vid', 'people')
+      ->accessCheck(FALSE);
+
+    return $query;
+  }
+
+  /**
+   * Authentication helper that verifies the current user with the expected
+   * module permissions or check the optional API credentials instead.
+   *
+   * The Request should return a valid JSON response with additional error
+   * information while any of the verification fails.
+   *
+   * @param \Symfony\Component\HttpFoundation\Request $request
+   * @return JsonResponse|null
+   */
+  private function checkAccess(Request $request)
+  {
+    // Get the current user and check if the required permissions are available.
+    $currentUser = \Drupal::currentUser();
+
+    if ($currentUser->isAuthenticated()) {
+      if (!$currentUser->hasPermission('quote_api.access')) {
+        return new JsonResponse(['error' => 'Access denied: Insufficient permissions.'], 403);
+      }
+
+      return null;
+    }
+
+    // Check with the API credentials if no user is logged in or does not have
+    // the required permissions.
+    $secret = \Drupal::config('quote_api.settings')->get('api_secret');
+    if (!$secret) {
+      return new JsonResponse(['error', 'API Endpoint not available'], 500);
+    }
+
+    // Implements basic API token usage via Argon2 that is defined from the
+    // expected API secret and timestamp based of the API Range configuration.
+    $token = $request->headers->get('Authorization') ?: $request->query->get('token');
+
+    if (!$token) {
+      return new JsonResponse(['error', 'No `token` parameter or `Authorization` header detected from the initial Request!'], 400);
+    }
+
+    $hash = base64_decode($token);
+    if (!$hash) {
+      return new JsonResponse(['error' => 'Unable to process required API token:' . $token], 422);
+    }
+
+    // Get the configurable range value that is used with the API secret
+    $range = \Drupal::config('quote_api.settings')->get('api_range') ?: 15;
+    $currentTime = floor(time() / 60);
+    $delta = floor($currentTime / ($range * 60)) * ($range * 60);
+
+    if (!password_verify($secret . $delta, $hash)) {
+      return new JsonResponse(['error' => 'Token rejected or expired: ' . $token], 403);
+    }
+
+    return null;
+  }
+
+  /**
+   * Returns the latest or random existing Quote.
+   *
+   * @param \Symfony\Component\HttpFoundation\Request $request
+   * @return \Symfony\Component\HttpFoundation\JsonResponse
+   *  Expected JSON Response containing a single quote.
+   */
+  public function getQuote(Request $request)
+  {
+    $unauthorized = $this->checkAccess($request);
+    if ($unauthorized) {
+      return $unauthorized;
+    }
+
+    // Create the base query to get published 'quote' nodes.
+    $query = \Drupal::entityQuery('node')
+      ->condition('type', 'quote')
+      ->condition('status', 1)
+      ->accessCheck(FALSE)
+      ->sort('created', 'DESC')
+      ->range(0, 1);
+
+    return $this->sendResponse($query);
+  }
+
 
   /**
    * Returns the available entries from the `quote` content type.
@@ -23,12 +164,57 @@ class QuoteApiController
    */
   public function getQuotes(Request $request)
   {
+    $unauthorized = $this->checkAccess($request);
+
+    if ($unauthorized) {
+      return $unauthorized;
+    }
+
+    // Filter from the additional Person Taxonomy name value or ID
+    $target = $request->query->get('target');
+    $sortBy = $request->query->get('sortBy', 'date');
+    $sortOrder = $request->query->get('sortOrder', 'ASC');
+
     // Fetch published quotes of content type 'quote'.
     $query = \Drupal::entityQuery('node')
       ->condition('type', 'quote')
       ->condition('status', 1)
       ->accessCheck(FALSE); // Use API key instead, .
     ;
+
+    // Apply additional filtering by `people` Taxonomy name or ID from:
+    if ($target) {
+      if (is_numeric($target)) {
+        $query->condition('field_person', (int) $target);
+      } else {
+        // Get the expected Taxonomy id from the given name
+        $term_ids = $term_ids = $this->filterByTarget($target);
+
+        if (empty($term_ids)) {
+          return new JsonResponse(['error' => 'Unable to find any quote from ' . $target], 404);
+        }
+
+        $query->condition('field_person', reset($term_ids)); // Take the first matching term ID.
+      }
+    }
+
+    // Implements basic sorting by Name or Date in ascending or descending
+    // order:
+    switch ($sortBy) {
+      case 'name':
+        $query->sort('title', $sortOrder);
+        break;
+
+      default:
+        $query->sort('created', $sortOrder);
+        break;
+    }
+
+    return $this->sendResponse($query);
+  }
+
+  private function sendResponse(QueryInterface $query)
+  {
 
     $nodes = $query->execute();
     $quotes = Node::loadMultiple($nodes);
@@ -45,8 +231,10 @@ class QuoteApiController
       ];
     }
 
-    $status = count($response) ? 200 : 204;
+    if (!count($response)) {
+      return new JsonResponse(['error' => 'Quotes not found'], 404);
+    }
 
-    return new JsonResponse($response, $status);
+    return new JsonResponse($response);
   }
 }
