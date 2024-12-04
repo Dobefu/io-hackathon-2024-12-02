@@ -1,11 +1,12 @@
 {{ define "page" }}
 {{ template "page-title" "Quotes" }}
 
-<div>
+<div class="py-4 flex flex-col gap-4">
   {{ range $quote := .Quotes }}
-  <div>
+  <div class="shadow">
     &ldquo;{{ $quote.title }}&rdquo; - {{ $quote.person }}
   </div>
+
   {{ end }}
 </div>
 
