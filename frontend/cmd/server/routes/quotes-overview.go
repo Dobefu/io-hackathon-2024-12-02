@@ -33,7 +33,7 @@ func QuotesOverview(w http.ResponseWriter, r *http.Request) {
 
 func getQuotes() (interface{}, error) {
 	endpoint := os.Getenv("API_ENDPOINT")
-	url := fmt.Sprintf("%s/quote", endpoint)
+	url := fmt.Sprintf("%s/quotes?token=%s", endpoint, os.Getenv("API_KEY"))
 
 	response, err := http.Get(url)
 
