@@ -53,7 +53,7 @@ class QuoteApiController extends ControllerBase
         ->range(0, 1);
     }
 
-    return $this->quoteApiService->parseQuery($query);
+    return $this->quoteApiService->parseContent($query);
   }
 
 
@@ -113,8 +113,11 @@ class QuoteApiController extends ControllerBase
         break;
     }
 
-    return $this->quoteApiService->parseQuery($query);
+    return $this->quoteApiService->parseContent($query);
   }
 
-  public function getPeople() {}
+  public function getPeople()
+  {
+    return $this->quoteApiService->parseTaxonomy();
+  }
 }

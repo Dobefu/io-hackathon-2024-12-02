@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Drupal\quote_api\Service;
 
 use Drupal\Core\Config\ConfigFactoryInterface;
+use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Entity\Query\QueryInterface;
 use Drupal\Core\Session\AccountProxyInterface;
@@ -102,14 +103,16 @@ class QuoteApiService
    * @return mixed \Drupal\Core\Entity\Query\QueryInterface
    *  Returns the optional Query interface.
    */
-  private function createTaxonomyQuery(string $value, string $taxonomyType = 'people')
+  private function createTaxonomyQuery(string $value = '', string $taxonomyType = 'people')
   {
-    if (!$value) {
-      return;
+    $query = $this->taxonomyStorage->getQuery();
+
+    if ($value) {
+      $query
+        ->condition('name', $value, 'LIKE');
     }
 
-    $query = $this->taxonomyStorage->getQuery()
-      ->condition('name', $value, 'LIKE')
+    $query
       ->condition('vid', $taxonomyType)
       ->accessCheck(FALSE);
 
@@ -126,7 +129,7 @@ class QuoteApiService
    * @return array
    *   Array of term IDs found for the target.
    */
-  public function filterByTarget(string $target, string $type = 'people')
+  public function filterByTarget(string $target = '', string $type = 'people')
   {
     $term_ids = $this->createTaxonomyQuery($target, $type)->execute();
 
@@ -158,7 +161,7 @@ class QuoteApiService
     return $query;
   }
 
-  public function parseQuery(QueryInterface $query): JsonResponse | null
+  public function parseContent(QueryInterface $query): JsonResponse | null
   {
     $entry = $query->execute();
 
@@ -176,6 +179,32 @@ class QuoteApiService
           'id' => $node->id(),
           'person' => $person->entity?->getName(),
           'title' => $node->getTitle(),
+        ];
+      }
+    }
+
+    if (!count($response)) {
+      return new JsonResponse(['error' => 'Quote not found'], 404);
+    }
+
+    return new JsonResponse($response);
+  }
+
+  public function parseTaxonomy(): JsonResponse
+  {
+    $query = $this->createTaxonomyQuery();
+    $vids = $query->execute();
+
+    /** @var \Drupal\node\Entity\Taxonomy[] $taxonomies */
+    $taxonomies = $this->taxonomyStorage->loadMultiple($vids);
+
+    $response = [];
+
+    if ($taxonomies && !empty($taxonomies)) {
+      foreach ($taxonomies as $key => $value) {
+        $response[] = [
+          'id' => $key,
+          'name' => $value->getName(),
         ];
       }
     }
