@@ -1,0 +1,23 @@
+uuid: 92802c99-9b9a-40cd-88c4-64e704afe9d6
+langcode: en
+status: true
+dependencies:
+  config:
+    - taxonomy.vocabulary.people
+id: taxonomy_term.people.default
+targetEntityType: taxonomy_term
+bundle: people
+mode: default
+content:
+  name:
+    type: string_textfield
+    weight: 0
+    region: content
+    settings:
+      size: 60
+      placeholder: ''
+    third_party_settings: {  }
+hidden:
+  description: true
+  path: true
+  status: true
