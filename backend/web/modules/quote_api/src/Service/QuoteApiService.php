@@ -52,7 +52,8 @@ class QuoteApiService
    * information while any of the verification fails.
    *
    * @param \Symfony\Component\HttpFoundation\Request $request
-   * @return JsonResponse|null
+   *
+   * @return null|Symfony\Component\HttpFoundation\JsonResponse
    */
   public function checkAccess(Request $request, bool $write = false): null | JsonResponse
   {
@@ -95,6 +96,16 @@ class QuoteApiService
     return null;
   }
 
+  /**
+   * Creates a new taxonomy from the compatible target value.
+   *
+   * @param string $target
+   *  Create or use the existing person from the given value.
+   * @param string $taxonomy
+   *  The given context of the actual taxonomy.
+   *
+   * @return string|Symfony\Component\HttpFoundation\JsonResponse
+   */
   public function createTaxonomyEntity(string $target = '', $taxonomy = 'people'): string | JsonResponse
   {
     $result = $this->filterByTarget($target);
@@ -125,6 +136,18 @@ class QuoteApiService
     return new JsonResponse(['error' => 'Term not created: ' . $target]);
   }
 
+  /**
+   * Creates a new Quote from the required title and people taxonomy id.
+   *
+   * @param string $title
+   *  The required Quote title.
+   * @param string $body
+   *  The optional Quote body.
+   * @param string $taxonmy
+   *  The required taxonomy ID value.
+   *
+   * @return Symfony\Component\HttpFoundation\JsonResponse
+   */
   public function createQuoteEntity(string $title, string $body = '', string $taxonomy = '')
   {
     if (!$title || !$taxonomy) {
@@ -222,6 +245,15 @@ class QuoteApiService
     return $term_ids;
   }
 
+  /**
+   * Helper function to create the base Query interface to use within the
+   * module context.
+   *
+   * @param string $type
+   *   Defines the new query from the given content type.
+   *
+   * @return Drupal\Core\Entity\Query\QueryInterface
+   */
   public function useQuery(string $type = 'quote'): QueryInterface
   {
     $query = $this->nodeStorage->getQuery()
@@ -260,9 +292,17 @@ class QuoteApiService
     return new JsonResponse(count($response) === 1 && $singular ? $response[0] : $response);
   }
 
-  public function parseTaxonomy(): JsonResponse
+  /**
+   * Returns the published taxonomies from the defined taxonomy type.
+   *
+   * @param string $type
+   *  Creates a new base Taxonomy query from the given $type.
+   *
+   * @return Symfony\Component\HttpFoundation\JsonResponse
+   */
+  public function parseTaxonomy($type = 'people'): JsonResponse
   {
-    $query = $this->createTaxonomyQuery();
+    $query = $this->createTaxonomyQuery('', $type);
     $vids = $query->execute();
 
     /** @var \Drupal\node\Entity\Taxonomy[] $taxonomies */
