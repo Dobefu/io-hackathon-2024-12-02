@@ -161,7 +161,7 @@ class QuoteApiService
     return $query;
   }
 
-  public function parseContent(QueryInterface $query): JsonResponse | null
+  public function parseContent(QueryInterface $query, bool $singular = false): JsonResponse | null
   {
     $entry = $query->execute();
 
@@ -187,7 +187,7 @@ class QuoteApiService
       return new JsonResponse(['error' => 'Quote not found'], 404);
     }
 
-    return new JsonResponse($response);
+    return new JsonResponse(count($response) === 1 && $singular ? $response[0] : $response);
   }
 
   public function parseTaxonomy(): JsonResponse
