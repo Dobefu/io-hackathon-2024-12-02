@@ -20,6 +20,7 @@ module:
   gin_toolbar: 0
   graphql: 0
   image: 0
+  inline_entity_form: 0
   inline_form_errors: 0
   key_auth: 0
   link: 0
@@ -31,6 +32,7 @@ module:
   page_cache: 0
   path: 0
   path_alias: 0
+  quote_api: 0
   syslog: 0
   system: 0
   taxonomy: 0

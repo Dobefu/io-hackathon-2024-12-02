@@ -1,6 +1,7 @@
 package routes
 
 import (
+	"frontend/cmd/server/utils"
 	"html/template"
 	"net/http"
 )
@@ -11,13 +12,10 @@ func Index(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	tpl := template.Must(template.ParseFiles(
-		"cmd/templates/html.tpl.html",
-		"cmd/templates/layout/header.tpl.html",
-		"cmd/templates/layout/footer.tpl.html",
-		"cmd/templates/pages/index.tpl.html",
-	))
+	templates := utils.CollectGlobalTemplates()
+	templates = append(templates, "cmd/templates/pages/index.html.tmpl")
 
+	tpl := template.Must(template.ParseFiles(templates...))
 	err := tpl.Execute(w, nil)
 
 	if err != nil {

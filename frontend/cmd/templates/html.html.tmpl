@@ -6,20 +6,20 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
 
-  <title>Hackathon</title>
+  <title>iO Quotes</title>
 
   <link rel="stylesheet" href="/static/css/main.css">
 </head>
 
 <body class="min-h-full flex flex-col flex-1 bg-gradient-to-br from-white to-gray-50">
   <div class="flex flex-1 flex-col justify-between gap-4">
-    {{ template "header" }}
+    {{ template "header" . }}
 
     <main class="mx-auto w-full max-w-7xl flex-1 px-8" id="main-content">
-      {{ template "page" }}
+      {{ template "page" . }}
     </main>
 
-    {{ template "footer" }}
+    {{ template "footer" . }}
   </div>
 </body>
 

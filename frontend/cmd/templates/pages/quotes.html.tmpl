@@ -1,0 +1,60 @@
+{{ define "page" }}
+<div class="flex items-center gap-4">
+  {{ template "page-title" "Quotes" }}
+</div>
+
+<div class="py-4">
+  <form id="quotes-search-form">
+    <div class="flex gap-4 items-center">
+      <label for="quotes-search-form--person" class="font-semibold">Person</label>
+      <select id="quotes-search-form--person" class="border px-3 py-2 rounded-lg shadow-inner" name="person">
+        <option value="">&lt;Anyone&gt;</option>
+
+        {{ $search := .Search }}
+        {{ range $person := .People }}
+        <option value="{{ $person.id }}" {{ if lt 0 (len $search) }}{{ if eq (printf "%.0f" $person.id) (index
+          $search.person 0) }}selected="selected" {{ end }}{{ end }}>
+          {{ $person.name }}
+        </option>
+        {{ end }}
+      </select>
+    </div>
+  </form>
+</div>
+
+<div class="py-4 grid grid-cols-2 max-sm:grid-cols-1 gap-4">
+  {{ range $quote := .Quotes }}
+  {{ template "quote--teaser" $quote }}
+  {{ end }}
+</div>
+
+<script>
+  const form = document.getElementById('quotes-search-form')
+  const urlwithoutQuery = `${window.location.origin}${window.location.pathname}`
+  const urlQuery = Object.fromEntries(new URLSearchParams(window.location.search))
+
+  for (const input of form) {
+    if (input.tagName !== "INPUT" && input.tagName !== 'SELECT') continue
+
+    const updateUrl = (e) => {
+      const targetName = e.target.name
+      const targetValue = e.target.value
+
+      urlQuery[targetName] = targetValue
+
+      for (const [paramName, paramValue] of Object.entries(urlQuery)) {
+        if (!paramValue) delete urlQuery[paramName]
+      }
+
+      let urlQueryString = new URLSearchParams(urlQuery).toString()
+      if (!!urlQueryString) urlQueryString = `?${urlQueryString}`
+
+      window.location.href = `${urlwithoutQuery}${urlQueryString}`
+    }
+
+    input.addEventListener('change', updateUrl)
+    input.addEventListener('search', updateUrl)
+  }
+</script>
+
+{{ end }}

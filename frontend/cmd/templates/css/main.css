@@ -2,3 +2,16 @@
 @tailwind components;
 @tailwind utilities;
 
+@view-transition {
+  navigation: auto;
+}
+
+::view-transition-group(*) {
+  height: revert;
+  z-index: 9999;
+}
+
+::view-transition-old(*),
+::view-transition-new(*) {
+  height: 100%;
+}

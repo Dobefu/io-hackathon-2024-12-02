@@ -1,0 +1,27 @@
+{{ define "page" }}
+
+<div class="flex items-center gap-4">
+  <a href="javascript:history.back()">
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+      <path fill="currentColor" d="M20 11v2H8l5.5 5.5l-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5L8 11z" />
+    </svg>
+  </a>
+  {{ template "page-title" "Back to quotes" }}
+</div>
+
+<div class="py-4 max-sm:grid-cols-1 gap-4">
+  {{ template "quote" .Quote }}
+</div>
+
+{{ $relatedQuotes := .RelatedQuotes }}
+
+<div class="py-4">
+  <h2 class="text-lg">Related Quotes</h2>
+  <div class="grid gap-4 grid-cols-1 md:grid-cols-2 xl:grid-cols-3">
+    {{ range $relatedQuote := $relatedQuotes }}
+    {{ template "quote--teaser" $relatedQuote }}
+    {{ end }}
+  </div>
+</div>
+
+{{ end }}
