@@ -7,7 +7,9 @@
   <form id="quotes-search-form">
     <div class="flex gap-4 items-center">
       <label for="quotes-search-form--person" class="font-semibold">Person</label>
-      <select id="quotes-search-form--person" class="border px-3 py-2 rounded-lg shadow-inner" name="person">
+      <select id="quotes-search-form--person"
+        class="py-3 px-4 pe-9 border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none"
+        name="person">
         <option value="">&lt;Anyone&gt;</option>
 
         {{ $search := .Search }}
