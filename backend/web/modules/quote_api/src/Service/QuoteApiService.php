@@ -22,10 +22,10 @@ const EMOJI_REGEX = '/[\x{1F600}-\x{1F64F}\x{1F300}-\x{1F5FF}\x{1F680}-\x{1F6FF}
 class QuoteApiService
 {
 
+  private $configName = 'quote_api.settings';
   private $globalAccess = 'quote_api.access';
   private $readAccess = 'quote_api.read';
   private $writeAccess = 'quote_api.write';
-  private $configName = 'quote_api.settings';
 
   private $apiSecret;
   private $nodeStorage;
@@ -145,8 +145,10 @@ class QuoteApiService
    *
    * @param string $title
    *  The required Quote title.
+   *
    * @param string $body
    *  The optional Quote body.
+   *
    * @param string $taxonmy
    *  The required taxonomy ID value.
    *

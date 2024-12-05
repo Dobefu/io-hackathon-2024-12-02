@@ -160,7 +160,7 @@ class QuoteApiController extends ControllerBase
 
   public function searchQuote(Request $request)
   {
-    $title = $this->quoteApiService->escapeValue($request->query->get('title'));
+    $title = $request->query->get('title');
 
     if (!$title) {
       return $this->getQuotes($request);
@@ -197,7 +197,7 @@ class QuoteApiController extends ControllerBase
       return $unauthorized;
     }
 
-    $title = $this->quoteApiService->escapeValue($request->query->get('title'));
+    $title = $request->query->get('title');
     $body = $this->quoteApiService->escapeValue($request->query->get('body'));
     $person = $this->quoteApiService->escapeValue($request->query->get('person'), TRUE);
 
