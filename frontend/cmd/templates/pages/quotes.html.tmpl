@@ -23,8 +23,10 @@
 </div>
 
 <div class="py-4 grid grid-cols-2 max-sm:grid-cols-1 gap-4">
-  {{ range $quote := .Quotes }}
+  {{ range $key, $quote := .Quotes }}
+  {{ if ne (printf "%s" $key) "error" }}
   {{ template "quote--teaser" $quote }}
+  {{ end }}
   {{ end }}
 </div>
 
