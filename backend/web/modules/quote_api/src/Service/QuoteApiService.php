@@ -175,7 +175,6 @@ class QuoteApiService
         $person = $node->get('field_person');
 
         $response[] = [
-          'body' => $node->get('body')->value,
           'id' => $node->id(),
           'person' => $person->entity?->getName(),
           'title' => $node->getTitle(),

@@ -73,14 +73,14 @@ func getQuoteById(id string) (map[string]interface{}, error) {
 
 	defer response.Body.Close()
 
-	var output []interface{}
+	var output interface{}
 	err = json.NewDecoder(response.Body).Decode(&output)
 
 	if err != nil {
 		return nil, err
 	}
 
-	return output[0].(map[string]interface{}), nil
+	return output.(map[string]interface{}), nil
 }
 
 func getQuotesByPerson(person string) ([]interface{}, error) {
