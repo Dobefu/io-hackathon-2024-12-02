@@ -5,13 +5,15 @@
   style="view-transition-name: quote-{{ .id }}">
   <div class="italic text-lg font-semibold">
     <a href="/quote/{{ .id }}">
-      <span class="text-2xl text-gray-500">&ldquo;</span><!--
+      <div class="block">
+        <span class="text-2xl text-gray-500">&ldquo;</span><!--
     --><span class="text-xl">{{- .title -}}</span><!--
     --><span class="text-2xl text-gray-500">&rdquo;</span>
+      </div>
     </a>
   </div>
   <a href="/quote/{{ .id }}">
-    <span class="text-gray-700">-&nbsp;{{ .person }}</span>
+    <span class="block text-gray-700">-&nbsp;{{ .person }}</span>
   </a>
 </div>
 
