@@ -15,6 +15,15 @@ quote_api.create:
   requirements:
     _access: "TRUE"
 
+quote_api.delete:
+  path: "/api/quote/delete"
+  # methods: [POST]
+  defaults:
+    _controller: '\Drupal\quote_api\Controller\QuoteApiController::deleteQuote'
+    _format: "json"
+  requirements:
+    _access: "TRUE"
+
 quote_api.people:
   path: "/api/quote/people"
   defaults:

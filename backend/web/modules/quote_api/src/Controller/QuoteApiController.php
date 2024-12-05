@@ -26,6 +26,17 @@ class QuoteApiController extends ControllerBase
     );
   }
 
+  public function deleteQuote(Request $request)
+  {
+    $id = $request->query->get('id');
+
+    if (!is_numeric($id)) {
+      return new JsonResponse(['error' => 'Unable to delete undefined Quote: ' . $id]);
+    }
+
+    return $this->quoteApiService->deleteQuote($id);
+  }
+
   /**
    * Returns the latest quote.
    *

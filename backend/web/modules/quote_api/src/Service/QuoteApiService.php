@@ -9,6 +9,7 @@ use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Entity\Query\QueryInterface;
 use Drupal\Core\Session\AccountProxyInterface;
+use Exception;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 
@@ -215,6 +216,40 @@ class QuoteApiService
       ->accessCheck(FALSE);
 
     return $query;
+  }
+
+  /**
+   * Deletes the existing Quote entry from the given id value.
+   *
+   * @param string $value
+   *  The expected quote id value..
+   *
+   * @return Symfony\Component\HttpFoundation\JsonResponse
+   */
+  public function deleteQuote(int $id)
+  {
+    if (!$id) {
+      return new JsonResponse(['error' => 'Unable to delete undefined Quote!', 400]);
+    }
+
+    /** @var \Drupal\node\Entity\Node $node */
+    $node = $this->nodeStorage->load($id);
+
+    if (!$node) {
+      return new JsonResponse(['error' => 'Cannot find node from: ' . $id], 404);
+    }
+
+    if ($node->getType() !== 'quote') {
+      return new JsonResponse(['error' => 'Type mismatch while removing:' . $id], 412);
+    }
+
+    try {
+      $node->delete();
+    } catch (Exception $exception) {
+      return new JsonResponse(['error' => $exception->getMessage()], 500);
+    }
+
+    return new JsonResponse(['error' => 'Node deleted: ' . $id], 200);
   }
 
   /**
