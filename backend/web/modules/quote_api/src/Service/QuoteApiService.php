@@ -20,6 +20,7 @@ class QuoteApiService
 
   private $globalAccess = 'quote_api.access';
   private $readAccess = 'quote_api.read';
+  private $writeAccess = 'quote_api.write';
   private $configName = 'quote_api.settings';
 
   private $apiSecret;
@@ -53,7 +54,7 @@ class QuoteApiService
    * @param \Symfony\Component\HttpFoundation\Request $request
    * @return JsonResponse|null
    */
-  public function checkAccess(Request $request): null | JsonResponse
+  public function checkAccess(Request $request, bool $write = false): null | JsonResponse
   {
     if (!$this->currentUser) {
       return new JsonResponse(['error' => 'Service not available'], 422);
@@ -61,7 +62,7 @@ class QuoteApiService
 
     // Get the current user and check if the required permissions are available.
     if ($this->currentUser->isAuthenticated()) {
-      if (!$this->currentUser->hasPermission($this->readAccess) || !$this->currentUser->hasPermission($this->globalAccess)) {
+      if (!$this->currentUser->hasPermission($write ? $this->writeAccess : $this->readAccess) || !$this->currentUser->hasPermission($this->globalAccess)) {
         return new JsonResponse([
           'error' => 'Access denied, required permissions are not defined for the current user'
         ]);
@@ -92,6 +93,46 @@ class QuoteApiService
     }
 
     return null;
+  }
+
+  public function createTaxonomyEntity($target)
+  {
+    $target = $this->filterByTarget($target);
+
+    if (!empty($target)) {
+      return;
+    }
+
+
+    dump($target);
+
+
+
+    // // Check if the term already exists.
+    // $term_ids = $this->taxonomyStorage->getQuery()
+    //   ->condition('name', $person)
+    //   ->condition('vid', 'people')
+    //   ->accessCheck(FALSE)
+    //   ->execute();
+
+    // if (!empty($term_ids)) {
+    //   return reset($term_ids); // Return the first matching term ID.
+    // }
+
+    // // Create a new term if it doesn't exist.
+    // $term = Term::create([
+    //   'vid' => 'people',
+    //   'name' => $person,
+    // ]);
+
+    // try {
+    //   $term->save();
+    //   return $term->id();
+    // } catch (\Exception $e) {
+    //   // Log the error and return NULL.
+    //   \Drupal::logger('quote_api')->error('Failed to create taxonomy term: @message', ['@message' => $e->getMessage()]);
+    //   return NULL;
+    // }
   }
 
   /**

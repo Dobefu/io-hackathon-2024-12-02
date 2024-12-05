@@ -2,6 +2,7 @@
 
 namespace Drupal\quote_api\Controller;
 
+use Drupal\Component\Serialization\Json;
 use Drupal\Core\Controller\ControllerBase;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -123,6 +124,26 @@ class QuoteApiController extends ControllerBase
 
   public function setQuote(Request $request)
   {
-    $data = json_decode($request->getContent(), TRUE);
+    $unauthorized = $this->quoteApiService->checkAccess($request, TRUE);
+
+    if ($unauthorized) {
+      return $unauthorized;
+    }
+
+    $title = $request->query->get('title');
+    $body = $request->query->get('body');
+    $person
+      = $request->query->get('person');
+
+
+    if (empty($title) || empty($person)) {
+      return new JsonResponse(['error' => 'The fields "title" and "person" are required.'], 400);
+    }
+
+    $this->quoteApiService->createTaxonomyEntity($person);
+
+
+
+    // return new JsonResponse(['d' => $data]);
   }
 }
