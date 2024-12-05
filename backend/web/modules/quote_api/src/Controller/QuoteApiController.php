@@ -140,10 +140,16 @@ class QuoteApiController extends ControllerBase
       return new JsonResponse(['error' => 'The fields "title" and "person" are required.'], 400);
     }
 
-    $this->quoteApiService->createTaxonomyEntity($person);
+    $taxonomy = $this->quoteApiService->createTaxonomyEntity($person);
 
+    if ($taxonomy instanceof JsonResponse) {
+      return $taxonomy;
+    }
 
+    $quote = $this->quoteApiService->createQuoteEntity($title, $body || '', $taxonomy);
 
-    // return new JsonResponse(['d' => $data]);
+    if ($quote instanceof JsonResponse) {
+      return $quote;
+    }
   }
 }

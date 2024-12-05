@@ -95,44 +95,73 @@ class QuoteApiService
     return null;
   }
 
-  public function createTaxonomyEntity($target)
+  public function createTaxonomyEntity(string $target = '', $taxonomy = 'people'): string | JsonResponse
   {
-    $target = $this->filterByTarget($target);
+    $result = $this->filterByTarget($target);
 
-    if (!empty($target)) {
-      return;
+    if (!empty($result)) {
+      return reset($result);
     }
 
+    $term = $this->taxonomyStorage->create([
+      'vid' => $taxonomy,
+      'name' => $target,
+    ]);
 
-    dump($target);
+    if (!$term) {
+      return new JsonResponse(['error' => 'Unable to create new term: ' . $target]);
+    }
 
+    try {
+      $term->save();
+      return $term->id();
+    } catch (\Exception $exception) {
+      // Log the error and return NULL.
+      if ($exception) {
+        return new JsonResponse(['error' => $exception->getMessage()]);
+      }
+    }
 
+    return new JsonResponse(['error' => 'Term not created: ' . $target]);
+  }
 
-    // // Check if the term already exists.
-    // $term_ids = $this->taxonomyStorage->getQuery()
-    //   ->condition('name', $person)
-    //   ->condition('vid', 'people')
-    //   ->accessCheck(FALSE)
-    //   ->execute();
+  public function createQuoteEntity(string $title, string $body = '', string $taxonomy = '')
+  {
+    if (!$title || !$taxonomy) {
+      return new JsonResponse(['error' => 'Unable to create new quote with undefined taxonomy...'], 400);
+    }
 
-    // if (!empty($term_ids)) {
-    //   return reset($term_ids); // Return the first matching term ID.
-    // }
+    // Ignore the API key requirement since we expect a valid user.
+    if (!$this->currentUser->hasPermission($this->globalAccess) || !$this->currentUser->hasPermission($this->writeAccess)) {
+      return new JsonResponse(['error' => 'Request rejected, verified user can only write new Quotes!'], 403);
+    }
 
-    // // Create a new term if it doesn't exist.
-    // $term = Term::create([
-    //   'vid' => 'people',
-    //   'name' => $person,
-    // ]);
+    try {
+      $node = $this->nodeStorage->create([
+        'type' => 'quote',
+        'title' => $title,
+        'body' => [
+          'value' => $body,
+          'format' => 'basic_html',
+        ],
+        'field_person' => [
+          'target_id' => $taxonomy,
+        ],
+        'status' => 1,
+        'uid' => $this->currentUser->id(),
 
-    // try {
-    //   $term->save();
-    //   return $term->id();
-    // } catch (\Exception $e) {
-    //   // Log the error and return NULL.
-    //   \Drupal::logger('quote_api')->error('Failed to create taxonomy term: @message', ['@message' => $e->getMessage()]);
-    //   return NULL;
-    // }
+      ]);
+
+      $node->save();
+    } catch (\Exception $exception) {
+      return new JsonResponse((['error' => $exception->getMessage()]));
+    }
+
+    return new JsonResponse([
+      'title' => $title,
+      'body' => $body,
+      'success' => $node ? TRUE : FALSE
+    ]);
   }
 
   /**
