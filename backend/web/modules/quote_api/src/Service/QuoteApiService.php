@@ -232,12 +232,20 @@ class QuoteApiService
       return new JsonResponse(['error' => 'Unable to delete undefined Quote!', 400]);
     }
 
+    if (!$this->currentUser->hasPermission($this->writeAccess)) {
+      return new JsonResponse([
+        'error' => 'Access denied, required permissions are not defined for the current user.'
+      ]);
+    }
+
     /** @var \Drupal\node\Entity\Node $node */
     $node = $this->nodeStorage->load($id);
 
     if (!$node) {
       return new JsonResponse(['error' => 'Cannot find node from: ' . $id], 404);
     }
+
+    $title = $node->getTitle();
 
     if ($node->getType() !== 'quote') {
       return new JsonResponse(['error' => 'Type mismatch while removing:' . $id], 412);
@@ -249,7 +257,11 @@ class QuoteApiService
       return new JsonResponse(['error' => $exception->getMessage()], 500);
     }
 
-    return new JsonResponse(['error' => 'Node deleted: ' . $id], 200);
+    return new JsonResponse([
+      'message' => 'Node deleted: ' . $title,
+      'context' => $id,
+      'success' => true
+    ], 200);
   }
 
   /**
