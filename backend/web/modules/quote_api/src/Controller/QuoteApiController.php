@@ -2,7 +2,6 @@
 
 namespace Drupal\quote_api\Controller;
 
-use Drupal\Component\Serialization\Json;
 use Drupal\Core\Controller\ControllerBase;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -42,6 +41,7 @@ class QuoteApiController extends ControllerBase
       return $unauthorized;
     }
 
+    /** @var QueryInterface */
     $query = $this->quoteApiService->useQuery();
 
     if ($id && $query) {
@@ -53,6 +53,7 @@ class QuoteApiController extends ControllerBase
         ->sort('created', 'DESC')
         ->range(0, 1);
     }
+
 
     return $this->quoteApiService->parseContent($query, TRUE);
   }
@@ -81,6 +82,7 @@ class QuoteApiController extends ControllerBase
     $sortOrder = $request->query->get('sortOrder', 'ASC');
     $field = 'field_person';
 
+    /** @var QueryInterface */
     $query = $this->quoteApiService->useQuery();
 
     if (!$query) {
@@ -128,6 +130,27 @@ class QuoteApiController extends ControllerBase
   public function getPeople()
   {
     return $this->quoteApiService->parseTaxonomy();
+  }
+
+  public function searchQuote(Request $request)
+  {
+    $title = $this->quoteApiService->escapeValue($request->query->get('title'));
+
+    if (!$title) {
+      return $this->getQuotes($request);
+    }
+
+    /** @var QueryInterface */
+    $query = $this->quoteApiService->useQuery();
+
+    if (!$query) {
+      return new JsonResponse(['error' => 'Unable to search quote:' . $title]);
+    }
+
+    $query
+      ->condition('title', '%' . $title . '%', 'LIKE');
+
+    return $this->quoteApiService->parseContent($query);
   }
 
 

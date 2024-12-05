@@ -285,7 +285,13 @@ class QuoteApiService
 
     return $query;
   }
-
+  /**
+   * Executes from the existing Query interface and prepare the expected JSON
+   * Response.
+   *
+   * @param Drupal\Core\Entity\Query\QueryInterface $query
+   * @param bool $singular
+   */
   public function parseContent(QueryInterface $query, bool $singular = false): JsonResponse | null
   {
     $entry = $query->execute();
