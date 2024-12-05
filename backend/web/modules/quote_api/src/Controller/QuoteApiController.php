@@ -150,7 +150,7 @@ class QuoteApiController extends ControllerBase
 
     $title = $this->quoteApiService->escapeValue($request->query->get('title'));
     $body = $this->quoteApiService->escapeValue($request->query->get('body'));
-    $person = $this->quoteApiService->escapeValue($request->query->get('person'));
+    $person = $this->quoteApiService->escapeValue($request->query->get('person'), TRUE);
 
     if (empty($title)) {
       return new JsonResponse(['error' => 'Cannot create new Quote from missing field: title'], 400);
@@ -166,7 +166,7 @@ class QuoteApiController extends ControllerBase
       return $taxonomy;
     }
 
-    $quote = $this->quoteApiService->createQuoteEntity($title, $body || '', $taxonomy);
+    $quote = $this->quoteApiService->createQuoteEntity($title, $body || '', $taxonomy, $person);
 
     if ($quote instanceof JsonResponse) {
       return $quote;

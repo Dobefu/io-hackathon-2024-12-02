@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Drupal\quote_api\Service;
 
-use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Component\Utility\Html;
+use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Entity\Query\QueryInterface;
 use Drupal\Core\Session\AccountProxyInterface;
@@ -13,6 +13,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 
 const CONTENT_TYPE = 'people';
+const EMOJI_REGEX = '/[\x{1F600}-\x{1F64F}\x{1F300}-\x{1F5FF}\x{1F680}-\x{1F6FF}\x{1F700}-\x{1F77F}\x{1F780}-\x{1F7FF}\x{1F800}-\x{1F8FF}\x{1F900}-\x{1F9FF}\x{1FA00}-\x{1FA6F}\x{1FA70}-\x{1FAFF}\x{2600}-\x{26FF}\x{2700}-\x{27BF}\x{2300}-\x{23FF}\x{2B50}\x{1F004}-\x{1F0CF}\x{2B06}\x{2194}\x{2B05}\x{2934}\x{2935}\x{25AA}\x{25AB}\x{25FE}\x{2B1B}\x{2B1C}\x{25FB}\x{25FD}\x{1F004}-\x{1F0CF}\x{26D5}\x{231A}\x{23F0}\x{231B}\x{23F3}\x{2B06}\x{2194}-\x{2935}\x{2B50}\x{1F004}-\x{1F0CF}]/u';
 
 /**
  * @todo Add class description.
@@ -150,7 +151,7 @@ class QuoteApiService
    *
    * @return Symfony\Component\HttpFoundation\JsonResponse
    */
-  public function createQuoteEntity(string $title, string $body = '', string $taxonomy = '')
+  public function createQuoteEntity(string $title, string $body = '', string $taxonomy = '', string $context = '')
   {
     if (!$title || !$taxonomy) {
       return new JsonResponse(['error' => 'Unable to create new quote with undefined taxonomy...'], 400);
@@ -185,6 +186,7 @@ class QuoteApiService
     return new JsonResponse([
       'title' => $title,
       'body' => $body,
+      'person' => $context ? $context : $taxonomy,
       'success' => $node ? TRUE : FALSE
     ]);
   }
@@ -218,9 +220,19 @@ class QuoteApiService
   /**
    * Helper function to escape the defined string value.
    */
-  public function escapeValue(string | null $value)
+  public function escapeValue(string | null $value, bool $strict = FALSE)
   {
-    return $value ? Html::escape($value) : '';
+    if (!$value) {
+      return '';
+    }
+
+    $sanitized = strip_tags($value);
+
+    if ($strict) {
+      $sanitized = preg_replace(EMOJI_REGEX, '', $sanitized);
+    }
+
+    return $sanitized ? Html::escape($sanitized) : '';
   }
 
   /**
