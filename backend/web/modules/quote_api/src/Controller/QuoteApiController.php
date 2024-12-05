@@ -26,8 +26,22 @@ class QuoteApiController extends ControllerBase
     );
   }
 
+  /**
+   * Deletes the existing quote from the expected Request parameters.
+   *
+   * @param \Symfony\Component\HttpFoundation\Request $request
+   *
+   * @return \Symfony\Component\HttpFoundation\JsonResponse
+   *  Expected JSON Response containing the status of the Request operation.
+   */
   public function deleteQuote(Request $request)
   {
+    $unauthorized = $this->quoteApiService->checkAccess($request);
+
+    if ($unauthorized) {
+      return $unauthorized;
+    }
+
     $id = $request->query->get('id');
 
     if (!is_numeric($id)) {
@@ -41,6 +55,7 @@ class QuoteApiController extends ControllerBase
    * Returns the latest quote.
    *
    * @param \Symfony\Component\HttpFoundation\Request $request
+   *
    * @return \Symfony\Component\HttpFoundation\JsonResponse
    *  Expected JSON Response containing a single quote.
    */
