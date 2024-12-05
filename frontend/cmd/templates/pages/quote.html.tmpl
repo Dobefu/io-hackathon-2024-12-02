@@ -14,9 +14,6 @@
 </div>
 
 {{ $relatedQuotes := .RelatedQuotes }}
-{{ if gt (len $relatedQuotes) 2 }}
-{{ $relatedQuotes = slice $relatedQuotes 0 3 }}
-{{ end }}
 
 <div class="py-4">
   <h2 class="text-lg">Related Quotes</h2>
