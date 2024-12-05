@@ -190,7 +190,7 @@ class QuoteApiService
 
     return new JsonResponse([
       'body' => $body,
-      'context' => $node->id(),
+      'id' => $node->id(),
       'person' => $context ? $context : $taxonomy,
       'title' => $title,
       'success' => $node ? true : false
@@ -263,8 +263,8 @@ class QuoteApiService
     }
 
     return new JsonResponse([
+      'id' => $id,
       'message' => 'Node deleted: ' . $title,
-      'context' => $id,
       'success' => true
     ], 200);
   }
