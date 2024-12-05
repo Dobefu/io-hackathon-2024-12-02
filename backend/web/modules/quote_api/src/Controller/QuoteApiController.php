@@ -120,4 +120,9 @@ class QuoteApiController extends ControllerBase
   {
     return $this->quoteApiService->parseTaxonomy();
   }
+
+  public function setQuote(Request $request)
+  {
+    $data = json_decode($request->getContent(), TRUE);
+  }
 }

@@ -18,7 +18,8 @@ use Symfony\Component\HttpFoundation\Request;
 class QuoteApiService
 {
 
-  private $readAccess = 'quote_api.access';
+  private $globalAccess = 'quote_api.access';
+  private $readAccess = 'quote_api.read';
   private $configName = 'quote_api.settings';
 
   private $apiSecret;
@@ -60,7 +61,7 @@ class QuoteApiService
 
     // Get the current user and check if the required permissions are available.
     if ($this->currentUser->isAuthenticated()) {
-      if (!$this->currentUser->hasPermission($this->readAccess)) {
+      if (!$this->currentUser->hasPermission($this->readAccess) || !$this->currentUser->hasPermission($this->globalAccess)) {
         return new JsonResponse([
           'error' => 'Access denied, required permissions are not defined for the current user'
         ]);

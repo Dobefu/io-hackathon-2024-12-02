@@ -22,6 +22,15 @@ quote_api.quote:
   requirements:
     _access: "TRUE"
 
+quote_api.create:
+  path: "/api/quote/set"
+  methods: [POST]
+  defaults:
+    _controller: '\Drupal\quote_api\Controller\QuoteApiController::setQuote'
+    _format: "json"
+  requirements:
+    _access: "TRUE"
+
 quote_api.config:
   path: "/admin/config/services/quote-api"
   defaults:
