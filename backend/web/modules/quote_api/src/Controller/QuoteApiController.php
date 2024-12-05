@@ -79,6 +79,7 @@ class QuoteApiController extends ControllerBase
     $person = $request->query->get('person');
     $sortBy = $request->query->get('sortBy', 'date');
     $sortOrder = $request->query->get('sortOrder', 'ASC');
+    $field = 'field_person';
 
     $query = $this->quoteApiService->useQuery();
 
@@ -89,16 +90,16 @@ class QuoteApiController extends ControllerBase
     // Apply additional filtering by `people` Taxonomy name or ID from:
     if ($person) {
       if (is_numeric($person)) {
-        $query->condition('field_person', (int) $person);
+        $query->condition($field, (int) $person);
       } else {
         // Get the expected Taxonomy id from the given name
         $term_ids = $this->quoteApiService->filterByTarget($person);
 
         if (empty($term_ids)) {
-          return new JsonResponse(['error' => 'Unable to find any quote from ' . $person], 404);
+          return new JsonResponse(['error' => 'Unable to find any Quote from:' . $person], 404);
         }
 
-        $query->condition('field_person', reset($term_ids)); // Take the first matching term ID.
+        $query->condition($field, reset($term_ids)); // Take the first matching term ID.
       }
     }
 
@@ -117,11 +118,28 @@ class QuoteApiController extends ControllerBase
     return $this->quoteApiService->parseContent($query);
   }
 
+
+  /**
+   * Returns all existing People taxonomy entries.
+   *
+   * @return \Symfony\Component\HttpFoundation\JsonResponse
+   *  Expected JSON Response containing all existing People taxonomies.
+   */
   public function getPeople()
   {
     return $this->quoteApiService->parseTaxonomy();
   }
 
+
+  /**
+   * Returns all existing People taxonomy entries.
+   *
+   * @param \Symfony\Component\HttpFoundation\Request $request
+   *  The initial HTTP Request.
+   *
+   * @return \Symfony\Component\HttpFoundation\JsonResponse
+   *  Expected JSON Response Object.
+   */
   public function setQuote(Request $request)
   {
     $unauthorized = $this->quoteApiService->checkAccess($request, TRUE);
@@ -130,14 +148,16 @@ class QuoteApiController extends ControllerBase
       return $unauthorized;
     }
 
-    $title = $request->query->get('title');
-    $body = $request->query->get('body');
-    $person
-      = $request->query->get('person');
+    $title = $this->quoteApiService->escapeValue($request->query->get('title'));
+    $body = $this->quoteApiService->escapeValue($request->query->get('body'));
+    $person = $this->quoteApiService->escapeValue($request->query->get('person'));
 
+    if (empty($title)) {
+      return new JsonResponse(['error' => 'Cannot create new Quote from missing field: title'], 400);
+    }
 
-    if (empty($title) || empty($person)) {
-      return new JsonResponse(['error' => 'The fields "title" and "person" are required.'], 400);
+    if (empty($person)) {
+      return new JsonResponse(['error' => 'Cannot create new Quote from missing field: person.'], 400);
     }
 
     $taxonomy = $this->quoteApiService->createTaxonomyEntity($person);
@@ -151,5 +171,8 @@ class QuoteApiController extends ControllerBase
     if ($quote instanceof JsonResponse) {
       return $quote;
     }
+
+    return
+      new JsonResponse(['error' => 'Quote not defined from: ' . $title], 500);
   }
 }

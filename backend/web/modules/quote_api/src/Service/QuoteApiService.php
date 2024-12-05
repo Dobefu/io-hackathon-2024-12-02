@@ -5,12 +5,14 @@ declare(strict_types=1);
 namespace Drupal\quote_api\Service;
 
 use Drupal\Core\Config\ConfigFactoryInterface;
-use Drupal\Core\Entity\EntityInterface;
+use Drupal\Component\Utility\Html;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Entity\Query\QueryInterface;
 use Drupal\Core\Session\AccountProxyInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+
+const CONTENT_TYPE = 'people';
 
 /**
  * @todo Add class description.
@@ -73,7 +75,7 @@ class QuoteApiService
     }
 
     if (!$this->apiSecret) {
-      return new JsonResponse(['error', 'API Endpoint not available'], 500);
+      return new JsonResponse(['error' => 'API Endpoint not available'], 500);
     }
 
     // Implements basic API token usage via Argon2 that is defined from the
@@ -81,7 +83,7 @@ class QuoteApiService
     $token = $request->headers->get('Authorization') ?: $request->query->get('token');
 
     if (!$token) {
-      return new JsonResponse(['error', 'No `token` parameter or `Authorization` header detected from the initial Request!'], 400);
+      return new JsonResponse(['error' => 'No `token` parameter or `Authorization` header detected from the initial Request!'], 400);
     }
 
     $hash = base64_decode($token);
@@ -106,7 +108,7 @@ class QuoteApiService
    *
    * @return string|Symfony\Component\HttpFoundation\JsonResponse
    */
-  public function createTaxonomyEntity(string $target = '', $taxonomy = 'people'): string | JsonResponse
+  public function createTaxonomyEntity(string $target = '', $taxonomy = CONTENT_TYPE): string | JsonResponse
   {
     $result = $this->filterByTarget($target);
 
@@ -197,7 +199,7 @@ class QuoteApiService
    * @return mixed \Drupal\Core\Entity\Query\QueryInterface
    *  Returns the optional Query interface.
    */
-  private function createTaxonomyQuery(string $value = '', string $taxonomyType = 'people')
+  private function createTaxonomyQuery(string $value = '', string $taxonomyType = CONTENT_TYPE)
   {
     $query = $this->taxonomyStorage->getQuery();
 
@@ -214,6 +216,14 @@ class QuoteApiService
   }
 
   /**
+   * Helper function to escape the defined string value.
+   */
+  public function escapeValue(string | null $value)
+  {
+    return $value ? Html::escape($value) : '';
+  }
+
+  /**
    * Helper method to get term IDs from a target as plain text, HTML entity
    * or Base64 encoded string.
    *
@@ -223,7 +233,7 @@ class QuoteApiService
    * @return array
    *   Array of term IDs found for the target.
    */
-  public function filterByTarget(string $target = '', string $type = 'people')
+  public function filterByTarget(string $target = '', string $type = CONTENT_TYPE)
   {
     $term_ids = $this->createTaxonomyQuery($target, $type)->execute();
 
@@ -300,7 +310,7 @@ class QuoteApiService
    *
    * @return Symfony\Component\HttpFoundation\JsonResponse
    */
-  public function parseTaxonomy($type = 'people'): JsonResponse
+  public function parseTaxonomy($type = CONTENT_TYPE): JsonResponse
   {
     $query = $this->createTaxonomyQuery('', $type);
     $vids = $query->execute();
