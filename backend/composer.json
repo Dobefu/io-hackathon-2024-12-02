@@ -20,6 +20,7 @@
         "drupal/core-composer-scaffold": "^11.0",
         "drupal/core-project-message": "^11.0",
         "drupal/core-recommended": "^11.0",
+        "drupal/entity_browser": "^2.12",
         "drupal/gin": "^3.0@RC",
         "drupal/gin_login": "^2.1",
         "drupal/graphql": "^4.9",

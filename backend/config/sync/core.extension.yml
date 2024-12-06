@@ -12,6 +12,8 @@ module:
   datetime_range: 0
   dynamic_page_cache: 0
   editor: 0
+  entity_browser: 0
+  entity_browser_entity_form: 0
   field: 0
   field_ui: 0
   file: 0

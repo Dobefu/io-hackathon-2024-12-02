@@ -1,0 +1,31 @@
+uuid: 73122c3b-677b-4845-923e-70dd60486fa0
+langcode: en
+status: true
+dependencies:
+  config:
+    - views.view.people_taxonomy
+  module:
+    - views
+name: people
+label: People
+display: modal
+display_configuration:
+  width: '650'
+  height: '500'
+  link_text: 'Select a person'
+  auto_open: true
+selection_display: no_display
+selection_display_configuration: {  }
+widget_selector: single
+widget_selector_configuration: {  }
+widgets:
+  16f621ee-b7e7-49ff-956d-7aee5adb0cd1:
+    id: view
+    uuid: 16f621ee-b7e7-49ff-956d-7aee5adb0cd1
+    label: People
+    weight: 1
+    settings:
+      submit_text: 'Select person'
+      auto_select: false
+      view: people_taxonomy
+      view_display: entity_browser_1

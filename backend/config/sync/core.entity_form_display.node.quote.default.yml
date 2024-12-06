@@ -6,6 +6,7 @@ dependencies:
     - field.field.node.quote.field_person
     - node.type.quote
   module:
+    - entity_browser_entity_form
     - inline_entity_form
 id: node.quote.default
 targetEntityType: node
@@ -35,7 +36,9 @@ content:
       collapsed: false
       revision: false
       removed_reference: keep
-    third_party_settings: {  }
+    third_party_settings:
+      entity_browser_entity_form:
+        entity_browser_id: people
   status:
     type: boolean_checkbox
     weight: 3
