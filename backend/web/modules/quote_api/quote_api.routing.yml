@@ -48,6 +48,14 @@ quote_api.quote:
   requirements:
     _access: "TRUE"
 
+quote_api.random:
+  path: "/api/quote/random"
+  defaults:
+    _controller: '\Drupal\quote_api\Controller\QuoteApiController::randomQuote'
+    _format: "json"
+  requirements:
+    _access: "TRUE"
+
 quote_api.search:
   path: "/api/quote/search"
   defaults:

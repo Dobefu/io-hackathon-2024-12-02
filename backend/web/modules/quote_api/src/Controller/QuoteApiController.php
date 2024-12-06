@@ -59,7 +59,7 @@ class QuoteApiController extends ControllerBase
    * @return \Symfony\Component\HttpFoundation\JsonResponse
    *  Expected JSON Response containing a single quote.
    */
-  public function getQuote(Request $request, string $id = null)
+  public function getQuote(Request $request, string $id = null): JsonResponse | null
   {
     $unauthorized = $this->quoteApiService->checkAccess($request);
 
@@ -156,6 +156,40 @@ class QuoteApiController extends ControllerBase
   public function getPeople()
   {
     return $this->quoteApiService->parseTaxonomy();
+  }
+
+  /**
+   * Returns a random existing Quote
+   *
+   * @param \Symfony\Component\HttpFoundation\Request $request
+   *
+   * @return \Symfony\Component\HttpFoundation\JsonResponse
+   *  Expected JSON Response containing a single quote.
+   */
+  public function randomQuote(Request $request): JsonResponse | null
+  {
+    $unauthorized = $this->quoteApiService->checkAccess($request);
+
+    if ($unauthorized) {
+      return $unauthorized;
+    }
+
+    /** @var QueryInterface */
+    $query = $this->quoteApiService->useQuery();
+
+    // Get a query interface for published quotes.
+    $query = $this->quoteApiService->useQuery();
+
+    // Execute the query to get all published quote IDs.
+    $quotes = $query->execute();
+
+    if (empty($quotes)) {
+      return new JsonResponse(['error' => 'No quotes available'], 404);
+    }
+
+    $randomID = array_rand($quotes);
+
+    return $this->getQuote($request, $randomID);
   }
 
   public function searchQuote(Request $request)
