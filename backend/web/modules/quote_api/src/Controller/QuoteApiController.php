@@ -176,11 +176,6 @@ class QuoteApiController extends ControllerBase
 
     /** @var QueryInterface */
     $query = $this->quoteApiService->useQuery();
-
-    // Get a query interface for published quotes.
-    $query = $this->quoteApiService->useQuery();
-
-    // Execute the query to get all published quote IDs.
     $quotes = $query->execute();
 
     if (empty($quotes)) {
