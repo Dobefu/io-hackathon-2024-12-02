@@ -85,7 +85,7 @@ func getQuoteById(id string) (map[string]interface{}, error) {
 
 func getQuotesByPerson(person string) ([]interface{}, error) {
 	endpoint := os.Getenv("API_ENDPOINT")
-	url := fmt.Sprintf("%s/quote/get?token=%s", endpoint, os.Getenv("API_KEY"))
+	url := fmt.Sprintf("%s/quote/get?token=%s&sortOrder=desc", endpoint, os.Getenv("API_KEY"))
 
 	if person != "" {
 		person = strings.ReplaceAll(person, " ", "%20")
