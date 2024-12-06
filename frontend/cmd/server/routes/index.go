@@ -18,6 +18,7 @@ func Index(w http.ResponseWriter, r *http.Request) {
 
 	templates := utils.CollectGlobalTemplates()
 	templates = append(templates, "cmd/templates/pages/index.html.tmpl")
+	templates = append(templates, "cmd/templates/partials/quote--teaser.html.tmpl")
 
 	quote, err := getRandomQuote()
 
@@ -31,7 +32,7 @@ func Index(w http.ResponseWriter, r *http.Request) {
 	data["Quote"] = quote
 
 	tpl := template.Must(template.ParseFiles(templates...))
-	err = tpl.Execute(w, nil)
+	err = tpl.Execute(w, data)
 
 	if err != nil {
 		log.Println(err.Error())
