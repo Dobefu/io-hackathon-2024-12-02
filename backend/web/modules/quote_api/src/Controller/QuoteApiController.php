@@ -52,6 +52,37 @@ class QuoteApiController extends ControllerBase
   }
 
   /**
+   * Filter from the additional taxonomy field.
+   *
+   * @param Drupal\Core\Entity\Query\QueryInterface $query
+   *
+   * @param string $value
+   *
+   * @param string $field
+   *
+   * @return \Symfony\Component\HttpFoundation\JsonResponse
+   *  Returns a JsonResponse as error if the filter is not applied.
+   */
+  private function filterQueryFromTaxonomy(QueryInterface &$query, mixed $value, string $field): null | JsonResponse
+  {
+    if ($value) {
+      if (is_numeric($value)) {
+        $query->condition($field, (int) $value);
+      } else {
+        $term_ids = $this->quoteApiService->filterByTarget($value);
+
+        if (empty($term_ids)) {
+          return new JsonResponse(['error' => 'Unable to filter from:' . $value], 400);
+        }
+
+        $query->condition($field, reset($term_ids));
+      }
+    }
+
+    return null;
+  }
+
+  /**
    * Returns the latest quote.
    *
    * @param \Symfony\Component\HttpFoundation\Request $request
@@ -115,20 +146,9 @@ class QuoteApiController extends ControllerBase
       return new JsonResponse(['Unable to use getQuotes from undefinde query'], 400);
     }
 
-    // Apply additional filtering by `people` Taxonomy name or ID from:
-    if ($person) {
-      if (is_numeric($person)) {
-        $query->condition($field, (int) $person);
-      } else {
-        // Get the expected Taxonomy id from the given name
-        $term_ids = $this->quoteApiService->filterByTarget($person);
-
-        if (empty($term_ids)) {
-          return new JsonResponse(['error' => 'Unable to find any Quote from:' . $person], 404);
-        }
-
-        $query->condition($field, reset($term_ids)); // Take the first matching term ID.
-      }
+    $filterException = $this->filterQueryFromTaxonomy($query, $person, $field);
+    if ($filterException) {
+      return $filterException;
     }
 
     // Implements basic sorting by Name or Date in ascending or descending
@@ -174,8 +194,17 @@ class QuoteApiController extends ControllerBase
       return $unauthorized;
     }
 
+    $person = $request->query->get('person');
+    $field = 'field_person';
+
     /** @var QueryInterface */
     $query = $this->quoteApiService->useQuery();
+
+    $filterException = $this->filterQueryFromTaxonomy($query, $person, $field);
+    if ($filterException) {
+      return $filterException;
+    }
+
     $quotes = $query->execute();
 
     if (empty($quotes)) {
@@ -187,9 +216,20 @@ class QuoteApiController extends ControllerBase
     return $this->getQuote($request, $randomID);
   }
 
+  /**
+   * Use partial search for the existing quotes that can be filtered by
+   * taxonomy.
+   *
+   * @param \Symfony\Component\HttpFoundation\Request $request
+   *
+   * @return \Symfony\Component\HttpFoundation\JsonResponse
+   *  Expected JSON Response containing the filtered quotes.
+   */
   public function searchQuote(Request $request)
   {
     $title = $request->query->get('title');
+    $person = $request->query->get('person');
+    $field = 'field_person';
 
     if (!$title) {
       return $this->getQuotes($request);
@@ -200,6 +240,11 @@ class QuoteApiController extends ControllerBase
 
     if (!$query) {
       return new JsonResponse(['error' => 'Unable to search quote:' . $title]);
+    }
+
+    $filterException = $this->filterQueryFromTaxonomy($query, $person, $field);
+    if ($filterException) {
+      return $filterException;
     }
 
     $query
