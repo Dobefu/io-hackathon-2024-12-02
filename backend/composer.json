@@ -27,6 +27,7 @@
         "drupal/inline_entity_form": "^3.0@RC",
         "drupal/key_auth": "^2.2",
         "drupal/pathauto": "^1.13",
+        "drupal/redis": "^1.8",
         "drush/drush": "^13.3"
     },
     "conflict": {

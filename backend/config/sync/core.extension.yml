@@ -35,6 +35,7 @@ module:
   path: 0
   path_alias: 0
   quote_api: 0
+  redis: 0
   syslog: 0
   system: 0
   taxonomy: 0
