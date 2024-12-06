@@ -1,6 +1,7 @@
 package routes
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"frontend/cmd/server/utils"
@@ -32,13 +33,17 @@ func Index(w http.ResponseWriter, r *http.Request) {
 	data["Quote"] = quote
 
 	tpl := template.Must(template.ParseFiles(templates...))
-	err = tpl.Execute(w, data)
+	var buf bytes.Buffer
+	err = tpl.Execute(&buf, data)
 
 	if err != nil {
 		log.Println(err.Error())
 		http.NotFound(w, r)
 		return
 	}
+
+	output := buf.Bytes()
+	utils.Output(w, r, "index", string(output))
 }
 
 func getRandomQuote() (map[string]interface{}, error) {

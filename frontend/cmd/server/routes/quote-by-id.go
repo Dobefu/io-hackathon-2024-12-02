@@ -1,6 +1,7 @@
 package routes
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"frontend/cmd/server/utils"
@@ -53,12 +54,16 @@ func QuoteById(w http.ResponseWriter, r *http.Request) {
 	data["RelatedQuotes"] = relatedQuotes
 
 	tpl := template.Must(template.ParseFiles(templates...))
-	err = tpl.Execute(w, &data)
+	var buf bytes.Buffer
+	err = tpl.Execute(&buf, data)
 
 	if err != nil {
 		log.Println(err.Error())
 		return
 	}
+
+	output := buf.Bytes()
+	utils.Output(w, r, "index", string(output))
 }
 
 func getQuoteById(id string) (map[string]interface{}, error) {
